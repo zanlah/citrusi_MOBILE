@@ -1,21 +1,18 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Slot } from 'expo-router';
+import { SessionProvider } from '@/context/AuthProvider';
 import * as SplashScreen from 'expo-splash-screen';
+import { useFonts } from 'expo-font';
 import { useEffect } from 'react';
-import 'react-native-reanimated';
-
 import { useColorScheme } from '@/hooks/useColorScheme';
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+import { DarkTheme, DefaultTheme, ThemeProvider, Theme } from '@react-navigation/native';
 
-export default function RootLayout() {
+export default function Root() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
-
+  const loggedIn = true;
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
@@ -26,12 +23,12 @@ export default function RootLayout() {
     return null;
   }
 
+  // Set up the auth context and render our layout inside of it.
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-    </ThemeProvider>
+      <SessionProvider>
+        <Slot />
+      </SessionProvider>
+    </ThemeProvider >
   );
 }
