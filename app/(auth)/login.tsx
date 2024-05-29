@@ -1,94 +1,74 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Button, Modal, StyleSheet, Text, TextInput, View, Alert, Pressable, ActivityIndicator } from 'react-native';
-import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';  // Corrected imports
-import { Redirect, Stack } from 'expo-router';
-import { router } from 'expo-router';
-//import { Camera, useCameraDevice } from 'react-native-vision-camera';
+import { useState, useRef } from 'react';
+import { Modal, Text, TextInput, View, Alert, Pressable, ActivityIndicator } from 'react-native';
+import { Camera, CameraView } from 'expo-camera';
+import {  router } from 'expo-router';
 import { useSession } from "@/context/AuthProvider";
+import axios from 'axios';
+
+
+const API = 'http://52.143.190.38/api';
+const API_lh = 'http://164.8.210.28:3000/api'; // fric test ip
 
 
 const login = () => {
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const cameraRef = useRef<any>(null);
     const [cameraOpen, setCameraOpen] = useState(false);
-    const [permission, requestPermission] = useCameraPermissions();
-    const [loading, setLoading] = useState(false);
-    const { session, isLoading } = useSession();
-    // const device = useCameraDevice('front')
-    const sessionContext = useSession();
-    const [facing, setFacing] = useState("front");  // Corrected CameraType usage
+    const [cameraPermission, setCameraPermission] = useState(false);
     const { signIn } = useSession();
-    const cameraRef = useRef<any>(null);  // Add type annotation to cameraRef
-    // Update type annotation to Camera
-    const login = async () => {
-        console.log("click")
+    const [loading, setLoading] = useState(false);
 
-        if (!cameraRef.current) return;
-        //() => sessionContext.signIn()
-        const photo = await cameraRef.current?.takePictureAsync();
-        console.log(photo);
-        /* router.push('/');
-         signIn();
-         // Navigate after signing in. You may want to tweak this to ensure sign-in is
-         // successful before navigating.
-         if (session) {  // This check might need to be adjusted based on your auth logic
-             router.push('/');
-         }*/
+    // Handles login for user, redirects to faceID
+    const handleLogin = async () => {
+        try {
+            await axios.post(`${API_lh}/users/login`, { email, password });
+            await requestCameraPermission();
+            setCameraOpen(true);  // Open the camera after login
+        } catch (error) {
+            console.error('Login failed:', error);
+        }
     }
 
     const handleTakePicture = async () => {
         if (!cameraRef.current) return;
         setLoading(true);
-        const photo = await cameraRef.current.takePictureAsync();
-
-        // Here you would send the photo to an API
-        const formData = new FormData();
-        formData.append('photo', photo.uri, 'photo.jpg');
-
         try {
-            const response = await fetch('API', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-            const responseData = await response.json();
-            console.log('Upload successful', responseData);
-            // Handle response data here
+            const photo = await cameraRef.current.takePictureAsync();
+
+            // Ko povezemo API z eksternim API uporabimo to
+            /*const response = await axios.post(`${API_lh}/users/sendImage`, {
+                image: photo.uri,
+            });*/
+
+            const response = { status: 201 };
+
+            if (response.status === 201) {
+                setLoading(false);
+                setCameraOpen(false);
+                signIn();
+                router.push('/');
+            } else {
+                console.error('Image upload failed with status:', response.status);
+                Alert.alert('Error uploading image', 'An error occurred while uploading the image.');
+            }
         } catch (error) {
             console.error('Error uploading image:', error);
+            Alert.alert('Error', 'An error occurred while uploading the image.');
         } finally {
             setLoading(false);
-            setCameraOpen(false);
         }
     };
-    /*useEffect(() => {
-        if (session) {  // This will check if session exists and then navigate
-            router.replace('/');
-        }
-    }, [session]);*/
-    if (!permission) {
-        return <View />;
-    }
 
-    if (!permission.granted) {
-        return (
-            <View >
-                <Text>We need your permission to show the camera</Text>
-                <Button onPress={requestPermission} title="Grant Permission" />
-            </View>
-        );
-    }
+    const requestCameraPermission = async () => {
+        const { status } = await Camera.requestCameraPermissionsAsync();
+        setCameraPermission(status === 'granted');
 
-    const toggleCameraFacing = () => {
-        setFacing((current: any) => (current === "front" ? "back" : "front"));
     };
 
     if (loading) {
         return <View className="flex-1 items-center justify-center"><ActivityIndicator size="large" color="#0000ff" /></View>;
     }
-
 
     return (
         <View className='flex flex-1 justify-center items-center '>
@@ -103,9 +83,8 @@ const login = () => {
                 <TextInput
                     className="block w-full rounded-md px-2  py-1.5 text-gray-900 shadow-sm border-2 border-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
 
-                    placeholder="Email"
-                    value={username}
-                    onChangeText={setUsername}
+                    value={email}
+                    onChangeText={setEmail}
                     autoCorrect={false}
                     autoCapitalize="none"
                 />
@@ -117,22 +96,18 @@ const login = () => {
                 <TextInput
                     className="block w-full rounded-md px-2  py-1.5 text-gray-900 shadow-sm border-2 border-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
 
-                    placeholder="Password"
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry={true}
                 />
             </View>
-            <Pressable className="px-4 py-2 mt-2 bg-black text-white dark:bg-black rounded-md" onPress={login}>
+            <Pressable className="px-4 py-2 mt-2 bg-black text-white dark:bg-black rounded-md" onPress={handleLogin}>
                 <Text className="text-white text-lg">
                     Prijava
                 </Text>
             </Pressable>
 
-            <Button title={cameraOpen ? "Close Camera" : "Open Camera"} onPress={() => setCameraOpen(!cameraOpen)} />
-            { /*@ts-ignore*/}
-
-            {cameraOpen && (
+            {cameraOpen && cameraPermission && (
                 <Modal
                     animationType="slide"
                     transparent={false}
@@ -150,17 +125,10 @@ const login = () => {
                             <Text className="text-white text-center bg-black py-2 rounded-md">Potrdi sliko</Text>
                         </Pressable>
                     </CameraView>
-                    {/* <Camera
-                        style={StyleSheet.absoluteFill}
-                        ref={cameraRef}
-                        device={device!}
-                        isActive={true}
-        />*/}
                 </Modal>
             )}
         </View>
     );
 };
-
 
 export default login;
