@@ -27,6 +27,7 @@
     "clsx": "^2.1.1",
     "eas-cli": "^9.1.0",
     "expo": "^51.0.8",
+    "expo-av": "^14.0.5",
     "expo-camera": "^15.0.9",
     "expo-constants": "~16.0.1",
     "expo-dev-client": "~4.0.14",

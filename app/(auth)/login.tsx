@@ -1,10 +1,9 @@
 import { useState, useRef } from 'react';
 import { Modal, Text, TextInput, View, Alert, Pressable, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Camera, CameraView } from 'expo-camera';
-import {  router } from 'expo-router';
-import { useSession } from "@/context/AuthProvider";
 import axios from 'axios';
-
+import { useSession } from "@/context/AuthProvider";
 
 const API = 'http://52.143.190.38/api';
 const API_lh = 'http://164.8.210.28:3000/api'; // fric test ip
@@ -18,6 +17,7 @@ const login = () => {
     const [cameraPermission, setCameraPermission] = useState(false);
     const { signIn } = useSession();
     const [loading, setLoading] = useState(false);
+    const router = useRouter();
 
     // Handles login for user, redirects to faceID
     const handleLogin = async () => {
@@ -77,9 +77,7 @@ const login = () => {
                 <Text className="text-blue-500">Registracija?</Text>
             </Pressable>
             <View className="w-full px-2">
-                <Text className="block text-sm font-medium leading-6 text-gray-900">
-                    Email
-                </Text>
+                <Text className="block text-sm font-medium leading-6 text-gray-900"> Email </Text>
                 <TextInput
                     className="block w-full rounded-md px-2  py-1.5 text-gray-900 shadow-sm border-2 border-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
 
@@ -90,9 +88,7 @@ const login = () => {
                 />
             </View>
             <View className="w-full px-2">
-                <Text className="block text-sm font-medium leading-6 text-gray-900">
-                    Geslo
-                </Text>
+                <Text className="block text-sm font-medium leading-6 text-gray-900"> Geslo </Text>
                 <TextInput
                     className="block w-full rounded-md px-2  py-1.5 text-gray-900 shadow-sm border-2 border-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
 
@@ -102,9 +98,7 @@ const login = () => {
                 />
             </View>
             <Pressable className="px-4 py-2 mt-2 bg-black text-white dark:bg-black rounded-md" onPress={handleLogin}>
-                <Text className="text-white text-lg">
-                    Prijava
-                </Text>
+                <Text className="text-white text-lg"> Prijava </Text>
             </Pressable>
 
             {cameraOpen && cameraPermission && (
