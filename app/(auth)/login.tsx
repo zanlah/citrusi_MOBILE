@@ -2,11 +2,12 @@ import { useState, useRef } from 'react';
 import { Modal, Text, TextInput, View, Alert, Pressable, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Camera, CameraView } from 'expo-camera';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import axios from 'axios';
 import { useSession } from "@/context/AuthProvider";
 
 const API = 'http://52.143.190.38/api';
-const API_lh = 'http://164.8.210.28:3000/api'; // fric test ip
+const API_lh = 'http://164.8.210.28:3000'; // fric test ip
 
 
 const login = () => {
@@ -19,46 +20,55 @@ const login = () => {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
-    // Handles login for user, redirects to faceID
-    const handleLogin = async () => {
-        try {
-            await axios.post(`${API_lh}/users/login`, { email, password });
-            await requestCameraPermission();
-            setCameraOpen(true);  // Open the camera after login
-        } catch (error) {
-            console.error('Login failed:', error);
-        }
-    }
 
-    const handleTakePicture = async () => {
+    // Klik gumba "Potrdi sliko", za avtentikacijo uporabnika
+    const handleUserLogin = async () => {
         if (!cameraRef.current) return;
         setLoading(true);
         try {
             const photo = await cameraRef.current.takePictureAsync();
 
-            // Ko povezemo API z eksternim API uporabimo to
-            /*const response = await axios.post(`${API_lh}/users/sendImage`, {
-                image: photo.uri,
-            });*/
+            // Pretvorimo sliko v JPEG format
+            const convertedPhoto = await manipulateAsync(
+                photo.uri,
+                [],
+                { format: SaveFormat.JPEG }
+            );
 
-            const response = { status: 201 };
+            // Posljemo zahtevo na API
+            const response = await axios.post(`${API}/users/loginMobile`, {
+                email: email,
+                password: password,
+                image: convertedPhoto
+            });
 
+            // Preverimo odgovor
             if (response.status === 201) {
                 setLoading(false);
                 setCameraOpen(false);
-                signIn();
-                router.push('/');
+                signIn(); // Prijavimo uporabnika
+                router.push('/'); // Ga preusmerimo na zacetno stran
             } else {
-                console.error('Image upload failed with status:', response.status);
-                Alert.alert('Error uploading image', 'An error occurred while uploading the image.');
+                console.error('Login error with status:', response.status);
+                Alert.alert('FaceID error', 'There was an error with your authentication.');
             }
         } catch (error) {
-            console.error('Error uploading image:', error);
-            Alert.alert('Error', 'An error occurred while uploading the image.');
+            console.error('Login failed: ', error);
         } finally {
             setLoading(false);
+            setCameraOpen(false);
         }
-    };
+    }
+
+    // Klik gumba "Prijava", da odpre kamero za faceID
+    const handleLoginButton = async () => {
+        try {
+            await requestCameraPermission();
+            setCameraOpen(true);
+        } catch (error) {
+            console.error('Camera permission denied:', error);
+        }
+    }
 
     const requestCameraPermission = async () => {
         const { status } = await Camera.requestCameraPermissionsAsync();
@@ -97,7 +107,7 @@ const login = () => {
                     secureTextEntry={true}
                 />
             </View>
-            <Pressable className="px-4 py-2 mt-2 bg-black text-white dark:bg-black rounded-md" onPress={handleLogin}>
+            <Pressable className="px-4 py-2 mt-2 bg-black text-white dark:bg-black rounded-md" onPress={handleLoginButton}>
                 <Text className="text-white text-lg"> Prijava </Text>
             </Pressable>
 
@@ -115,7 +125,7 @@ const login = () => {
                     >
 
                         <View className="mx-auto my-auto w-[80%] h-[80%] border-8 border-white rounded-full bg-transparent " />
-                        <Pressable className="absolute bottom-8 w-full px-4" onPress={handleTakePicture}>
+                        <Pressable className="absolute bottom-8 w-full px-4" onPress={handleUserLogin}>
                             <Text className="text-white text-center bg-black py-2 rounded-md">Potrdi sliko</Text>
                         </Pressable>
                     </CameraView>
