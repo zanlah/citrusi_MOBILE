@@ -101,12 +101,10 @@ const login = () => {
                     secureTextEntry={true}
                 />
             </View>
-            <Pressable className="px-4 py-2 mt-2 bg-black text-white dark:bg-black rounded-md" onPress={handleLoginPress}>
+            <Pressable className="px-4 py-2 mt-2 bg-black text-white dark:bg-black rounded-md" onPress={handleLoginButton}>
                 <Text className="text-white text-lg"> Prijava </Text>
             </Pressable>
-            <Pressable className="px-4 py-2 mt-2 bg-green-500 text-white rounded-md" onPress={testApiConnection}>
-                <Text className="text-white text-lg">Test API Connection</Text>
-            </Pressable>
+
             {cameraOpen && cameraPermission && (
                 <Modal
                     animationType="slide"
