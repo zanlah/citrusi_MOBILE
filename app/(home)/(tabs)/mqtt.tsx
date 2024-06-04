@@ -6,6 +6,8 @@ import { error } from 'console';
 const MqttPage = () => {
   const [client, setClient] = useState<Paho.Client | null>(null);
   const [message, setMessage] = useState('');
+  const [topic, setTopic] = useState('');
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
     connectToMqtt();
