@@ -6,7 +6,6 @@ import axios from 'axios';
 import { useSession } from "@/context/AuthProvider";
 
 
-
 const login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -17,98 +16,53 @@ const login = () => {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
-    // Handles login for user, redirects to faceID
-    const handleLoginPress = async () => {
-        try {
-            //  await axios.post(`${API_lh}/users/login`, { email, password });
-            await requestCameraPermission();
-            setCameraOpen(true);  // Open the camera after login
 
-        } catch (error) {
-            console.error('Login failed:', error);
-        }
-    }
-
-    const testApiConnection = async () => {
-        try {
-            const response = await axios.get(`http://52.143.190.38/api/hello`);
-            Alert.alert('API Connection Test', `Response: ${response.data}`);
-        } catch (error) {
-            console.error('API Connection Test Failed:', error);
-
-        }
-    };
-
-
-
-
-    const handleLogin = async (photo: any) => {
-        try {
-
-            const formData = new FormData();
-            formData.append("image", new File([photo.uri], "logo.png", { type: "image/png" || "image/jpg" || "image/jpeg" }));
-            formData.append('email', email);
-            formData.append('password', password);
-
-            const axiosResponse = await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/users/loginMobile`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
-
-            if (axiosResponse.status === 201 || axiosResponse.status === 200) {
-                // Handle success scenario
-                console.log('Login successful');
-            } else {
-                // Handle error scenario
-                console.error('Login failed with status:', axiosResponse.status);
-            }
-        } catch (error: any) {
-            if (error.response) {
-                // The request was made and the server responded with a status code
-                // that falls out of the range of 2xx
-                console.error('Login failed with response:', error.response.data);
-            } else if (error.request) {
-                // The request was made but no response was received
-                console.error('Login failed with request:', error.request);
-            } else {
-                // Something happened in setting up the request that triggered an error
-                console.error('Login failed with message:', error.message);
-            }
-        }
-    };
-
-
-    const handleTakePicture = async () => {
+    // Klik gumba "Potrdi sliko", za avtentikacijo uporabnika
+    const handleUserLogin = async () => {
         if (!cameraRef.current) return;
         setLoading(true);
         try {
             const photo = await cameraRef.current.takePictureAsync();
 
-            handleLogin(photo);
-            // Ko povezemo API z eksternim API uporabimo to
-            /*const response = await axios.post(`${API_lh}/users/sendImage`, {
-                image: photo.uri,
-            });*/
+            const formData = new FormData();
+            formData.append("image", new File([photo.uri], "logo.png", { type: "image/png" }));
+            formData.append('email', email);
+            formData.append('password', password);
 
-            const response = { status: 201 };
+            const response = await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/users/loginMobile`,
+                formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
 
+            // Preverimo odgovor
             if (response.status === 201) {
                 setLoading(false);
                 setCameraOpen(false);
-                signIn();
-                router.push('/');
+                signIn(); // Prijavimo uporabnika
+                router.push('/'); // Ga preusmerimo na zacetno stran
             } else {
-                console.error('Image upload failed with status:', response.status);
-                Alert.alert('Error uploading image', 'An error occurred while uploading the image.');
+                console.error('Login error with status:', response.status);
+                Alert.alert('FaceID error', 'There was an error with your authentication.');
             }
         } catch (error) {
-            console.error('Error uploading image:', error);
-            Alert.alert('Error', 'An error occurred while uploading the image.');
+            console.error('Login failed: ', error);
         } finally {
             setLoading(false);
+            setCameraOpen(false);
         }
-    };
+    }
+
+    // Klik gumba "Prijava", da odpre kamero za faceID
+    const handleLoginButton = async () => {
+        try {
+            await requestCameraPermission();
+            setCameraOpen(true);
+        } catch (error) {
+            console.error('Camera permission denied:', error);
+        }
+    }
 
     const requestCameraPermission = async () => {
         const { status } = await Camera.requestCameraPermissionsAsync();
@@ -167,7 +121,7 @@ const login = () => {
                     >
 
                         <View className="mx-auto my-auto w-[80%] h-[80%] border-8 border-white rounded-full bg-transparent " />
-                        <Pressable className="absolute bottom-8 w-full px-4" onPress={handleTakePicture}>
+                        <Pressable className="absolute bottom-8 w-full px-4" onPress={handleUserLogin}>
                             <Text className="text-white text-center bg-black py-2 rounded-md">Potrdi sliko</Text>
                         </Pressable>
                     </CameraView>
