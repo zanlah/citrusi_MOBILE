@@ -43,6 +43,24 @@ const MqttPage = () => {
     });
   };
 
+  const subscribeToTopic = () => {
+    if (client && topic) {
+      client.subscribe(topic, {
+        onSuccess: () => {
+          console.log(`Subscribed to topic ${topic}`);
+          Alert.alert('Subscribed', `Subscribed to topic ${topic}`);
+        },
+        onFailure: (error) => {
+          console.error('Subscription error:', error);
+          Alert.alert('Subscription error', error.errorMessage);
+        },
+      });
+      client.onMessageArrived = onMessageArrived;
+    } else {
+      Alert.alert('Error', 'Please connect to the broker and enter a valid topic.');
+    }
+  };
+
     const publishMessage = () => {
     if (client) {
         console.log('Publish pressed');
@@ -62,7 +80,7 @@ const MqttPage = () => {
         value={topic}
         onChangeText={setTopic}
       />
-      <Button title="Subscribe" disabled={!isConnected} />
+      <Button title="Subscribe" onPress={subscribeToTopic} disabled={!isConnected} />
       <TextInput
         style={{ width: '100%', height: 50, borderWidth: 1, borderColor: 'gray', borderRadius: 5, padding: 10, marginBottom: 10 }}
         placeholder="Message"
