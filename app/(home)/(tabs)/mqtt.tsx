@@ -22,8 +22,9 @@ const MqttPage = () => {
                 console.error('Subscription error: ', error);
             },
         });
+        client.onMessageArrived = onMessageArrived;
     }
-  })
+  }, [client]);
   
   const connectToMqtt = () => {
     const mqttClient = new Paho.Client('test.mosquitto.org', 8080, 'clientID');
