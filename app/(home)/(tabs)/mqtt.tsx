@@ -45,6 +45,10 @@ const MqttPage = () => {
     }
   };
 
+  const onMessageArrived = (message: Paho.Message) => {
+    Alert.alert('New Message Received', message.payloadString);
+  }
+
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
       <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>MQTT Publish</Text>
