@@ -55,7 +55,14 @@ const MqttPage = () => {
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-      <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>MQTT Publish</Text>
+      <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>MQTT Publish & Subscribe</Text>
+      <TextInput
+        style={{ width: '100%', height: 50, borderWidth: 1, borderColor: 'gray', borderRadius: 5, padding: 10, marginBottom: 10 }}
+        placeholder="Topic"
+        value={topic}
+        onChangeText={setTopic}
+      />
+      <Button title="Subscribe" disabled={!isConnected} />
       <TextInput
         style={{ width: '100%', height: 50, borderWidth: 1, borderColor: 'gray', borderRadius: 5, padding: 10, marginBottom: 10 }}
         placeholder="Message"
