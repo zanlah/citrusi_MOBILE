@@ -6,6 +6,20 @@ const MqttPage = () => {
   const [client, setClient] = useState<Paho.Client | null>(null);
   const [message, setMessage] = useState('');
 
+  const connectToMqtt = () => {
+    const mqttClient = new Paho.Client('test.mosquitto.org', 8080, 'clientID');
+
+    mqttClient.connect({
+      onSuccess: () => {
+        console.log('Connected to MQTT broker');
+        setClient(mqttClient);
+      },
+      onFailure: (error) => {
+        console.error('Connection error: ', error);
+      },
+    });
+  };
+
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
       <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>MQTT Publish</Text>
