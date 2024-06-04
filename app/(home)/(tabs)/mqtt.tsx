@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, Alert } from 'react-native';
 import * as Paho from 'paho-mqtt';
+import { error } from 'console';
 
 const MqttPage = () => {
   const [client, setClient] = useState<Paho.Client | null>(null);
@@ -10,6 +11,20 @@ const MqttPage = () => {
     connectToMqtt();
   }, []); // Prazen dependency da se poveže samo 1x
 
+  useEffect(() => {
+    // SUbsrcibe na testni topic
+    if (client) {
+        client.subscribe('testni', {
+            onSuccess: () => {
+                console.log('Subscribed to topic');
+            },
+            onFailure: (error) => {
+                console.error('Subscription error: ', error);
+            },
+        });
+    }
+  })
+  
   const connectToMqtt = () => {
     const mqttClient = new Paho.Client('test.mosquitto.org', 8080, 'clientID');
 
