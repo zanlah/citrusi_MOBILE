@@ -5,7 +5,7 @@ import { Camera, CameraView } from 'expo-camera';
 import axios from 'axios';
 
 const API = 'http://52.143.190.38/api';
-const API_lh = 'http://164.8.210.28:3000/api'; // fric test ip
+const API_lh = 'http://52.143.190.38/api'; // fric test ip
 
 
 const RegisterPage = () => {
@@ -22,11 +22,15 @@ const RegisterPage = () => {
 
     const router = useRouter();
 
-    const handleRegister = async () => {
+    const handleRegisterPress = async () => {
         try {
-            await axios.post(`${API_lh}/users/register`, { email, username, password });
+            await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/users/register`, { email, username, password }).then((response) => {
+                console.log(response);
+                //signIn(email, password);
+            }
+            );
             await requestCameraPermission();
-            setCameraOpen(true); 
+            setCameraOpen(true);
             setRecordingStep(0);
             Alert.alert('Snemanje obraza', 'Posnamite sprednji del obraza.');
             Alert.alert('Snemanje obraza', 'Za vsak poziv pritisnite gumb "Začni snemanje".');
@@ -34,6 +38,47 @@ const RegisterPage = () => {
             console.error('Login failed:', error);
         }
     };
+
+
+    const handleRegister = async () => {
+        const formData = new FormData();
+        formData.append('email', email);
+        formData.append('username', username);
+        formData.append('password', password);
+
+        videoUris.forEach(async (uri, index) => {
+            formData.append(`video${index}`, new File([uri], `video${index}.mp4`, { type: "video/mp4" }));
+        });
+
+        try {
+            const axiosResponse = await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/users/register`,
+                formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+
+            if (axiosResponse.status === 201 || axiosResponse.status === 200) {
+                // Handle success scenario
+                console.log('Register successful');
+            } else {
+                // Handle error scenario
+                console.error('Register failed with status:', axiosResponse.status);
+            }
+        } catch (error: any) {
+            if (error.response) {
+                // The request was made and the server responded with a status code
+                // that falls out of the range of 2xx
+                console.error('Register failed with response:', error.response.data);
+            } else if (error.request) {
+                // The request was made but no response was received
+                console.error('Register failed with request:', error.request);
+            } else {
+                // Something happened in setting up the request that triggered an error
+                console.error('Register failed with message:', error.message);
+            }
+        }
+    }
 
     const handleNextStep = () => {
         setRecordingStep((prevStep) => prevStep + 1);
@@ -51,6 +96,9 @@ const RegisterPage = () => {
             case 3:
                 alertMessage = 'Posnamite spodnji del obraza.';
                 break;
+            case 4: {
+                handleRegister();
+            }
             default:
                 try {
                     // Ko povezemo API z eksternim API uporabimo to
@@ -169,7 +217,7 @@ const RegisterPage = () => {
                 />
             </View>
 
-            <Pressable className="px-4 py-2 mt-2 bg-black text-white dark:bg-black rounded-md" onPress={handleRegister}>
+            <Pressable className="px-4 py-2 mt-2 bg-black text-white dark:bg-black rounded-md" onPress={handleRegisterPress}>
                 <Text className="text-white text-lg"> Registracija </Text>
             </Pressable>
 

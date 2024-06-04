@@ -5,8 +5,6 @@ import { Camera, CameraView } from 'expo-camera';
 import axios from 'axios';
 import { useSession } from "@/context/AuthProvider";
 
-const API = 'http://52.143.190.38/api';
-const API_lh = 'http://164.8.210.28:3000/api'; // fric test ip
 
 
 const login = () => {
@@ -20,15 +18,66 @@ const login = () => {
     const router = useRouter();
 
     // Handles login for user, redirects to faceID
-    const handleLogin = async () => {
+    const handleLoginPress = async () => {
         try {
-            await axios.post(`${API_lh}/users/login`, { email, password });
+            //  await axios.post(`${API_lh}/users/login`, { email, password });
             await requestCameraPermission();
             setCameraOpen(true);  // Open the camera after login
+
         } catch (error) {
             console.error('Login failed:', error);
         }
     }
+
+    const testApiConnection = async () => {
+        try {
+            const response = await axios.get(`http://52.143.190.38/api/hello`);
+            Alert.alert('API Connection Test', `Response: ${response.data}`);
+        } catch (error) {
+            console.error('API Connection Test Failed:', error);
+
+        }
+    };
+
+
+
+
+    const handleLogin = async (photo: any) => {
+        try {
+
+            const formData = new FormData();
+            formData.append("image", new File([photo.uri], "logo.png", { type: "image/png" || "image/jpg" || "image/jpeg" }));
+            formData.append('email', email);
+            formData.append('password', password);
+
+            const axiosResponse = await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/users/loginMobile`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            if (axiosResponse.status === 201 || axiosResponse.status === 200) {
+                // Handle success scenario
+                console.log('Login successful');
+            } else {
+                // Handle error scenario
+                console.error('Login failed with status:', axiosResponse.status);
+            }
+        } catch (error: any) {
+            if (error.response) {
+                // The request was made and the server responded with a status code
+                // that falls out of the range of 2xx
+                console.error('Login failed with response:', error.response.data);
+            } else if (error.request) {
+                // The request was made but no response was received
+                console.error('Login failed with request:', error.request);
+            } else {
+                // Something happened in setting up the request that triggered an error
+                console.error('Login failed with message:', error.message);
+            }
+        }
+    };
+
 
     const handleTakePicture = async () => {
         if (!cameraRef.current) return;
@@ -36,6 +85,7 @@ const login = () => {
         try {
             const photo = await cameraRef.current.takePictureAsync();
 
+            handleLogin(photo);
             // Ko povezemo API z eksternim API uporabimo to
             /*const response = await axios.post(`${API_lh}/users/sendImage`, {
                 image: photo.uri,
@@ -72,7 +122,7 @@ const login = () => {
 
     return (
         <View className='flex flex-1 justify-center items-center '>
-            <Text >Prijava</Text>
+            <Text >Prijava {process.env.BASE_URL}</Text>
             <Pressable onPress={() => router.push('/register')}>
                 <Text className="text-blue-500">Registracija?</Text>
             </Pressable>
@@ -97,10 +147,12 @@ const login = () => {
                     secureTextEntry={true}
                 />
             </View>
-            <Pressable className="px-4 py-2 mt-2 bg-black text-white dark:bg-black rounded-md" onPress={handleLogin}>
+            <Pressable className="px-4 py-2 mt-2 bg-black text-white dark:bg-black rounded-md" onPress={handleLoginPress}>
                 <Text className="text-white text-lg"> Prijava </Text>
             </Pressable>
-
+            <Pressable className="px-4 py-2 mt-2 bg-green-500 text-white rounded-md" onPress={testApiConnection}>
+                <Text className="text-white text-lg">Test API Connection</Text>
+            </Pressable>
             {cameraOpen && cameraPermission && (
                 <Modal
                     animationType="slide"
