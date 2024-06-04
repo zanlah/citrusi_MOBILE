@@ -65,6 +65,7 @@
   "devDependencies": {
     "@babel/core": "^7.20.0",
     "@types/jest": "^29.5.12",
+    "@types/paho-mqtt": "^1.0.10",
     "@types/react": "~18.2.45",
     "@types/react-native": "^0.73.0",
     "@types/react-test-renderer": "^18.0.7",
