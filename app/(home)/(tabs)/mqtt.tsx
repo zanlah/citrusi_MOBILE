@@ -12,21 +12,6 @@ const MqttPage = () => {
   useEffect(() => {
     connectToMqtt();
   }, []); // Prazen dependency da se poveže samo 1x
-
-  useEffect(() => {
-    // SUbsrcibe na testni topic
-    if (client) {
-        client.subscribe('testni', {
-            onSuccess: () => {
-                console.log('Subscribed to topic');
-            },
-            onFailure: (error) => {
-                console.error('Subscription error: ', error);
-            },
-        });
-        client.onMessageArrived = onMessageArrived;
-    }
-  }, [client]);
   
   const connectToMqtt = () => {
     const mqttClient = new Paho.Client('test.mosquitto.org', 8080, 'clientID');
@@ -61,9 +46,12 @@ const MqttPage = () => {
     }
   };
 
-    const publishMessage = () => {
+  const publishMessage = () => {
     if (client) {
-        console.log('Publish pressed');
+      const mqttMessage = new Paho.Message(message + ' gre na pohod');
+      mqttMessage.destinationName = 'testni';
+      client.send(mqttMessage);
+      console.log('Message published');
     }
   };
 
@@ -84,9 +72,10 @@ const MqttPage = () => {
       <TextInput
         style={{ width: '100%', height: 50, borderWidth: 1, borderColor: 'gray', borderRadius: 5, padding: 10, marginBottom: 10 }}
         placeholder="Message"
+        value={message}
+        onChangeText={setMessage}
       />
-      {/* No need for a connect button */}
-      <Button title="Publish" onPress={publishMessage} />
+      <Button title="Publish" onPress={publishMessage} disabled={!isConnected} />
     </View>
   );
 };
