@@ -25,7 +25,15 @@ const login = () => {
             const photo = await cameraRef.current.takePictureAsync();
 
             const formData = new FormData();
-            formData.append("image", new File([photo.uri], "logo.png", { type: "image/png" }));
+            console.log('photo', photo.uri)
+            //@ts-ignore
+            formData.append('image', {
+                uri: photo.uri,
+                type: "image/jpeg",
+                name: "photo.jpg"
+            })
+            //  formData.append("image", new File([photo.uri], "logo.png", { type: "image/png" }));
+            //formData.append('image', photo);
             formData.append('email', email);
             formData.append('password', password);
 
@@ -36,12 +44,13 @@ const login = () => {
                 }
             })
 
-            // Preverimo odgovor
-            if (response.status === 201) {
+            // Preverimo odgovorr
+            if (response.status === 201 || response.status === 200) {
                 setLoading(false);
                 setCameraOpen(false);
-                signIn(); // Prijavimo uporabnika
-                router.push('/'); // Ga preusmerimo na zacetno stran
+                console.log('Login success:', response.data);
+                //signIn(); // Prijavimo uporabnika
+                //router.push('/'); // Ga preusmerimo na zacetno stran
             } else {
                 console.error('Login error with status:', response.status);
                 Alert.alert('FaceID error', 'There was an error with your authentication.');

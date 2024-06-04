@@ -1,12 +1,9 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Modal, Text, TextInput, View, Alert, Pressable, ActivityIndicator, Animated, Easing } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Camera, CameraView } from 'expo-camera';
 import axios from 'axios';
-
-const API = 'http://52.143.190.38/api';
-const API_lh = 'http://52.143.190.38/api'; // fric test ip
-
+import { Audio } from 'expo-av';
 
 const RegisterPage = () => {
     const [username, setUsername] = useState('');
@@ -19,38 +16,69 @@ const RegisterPage = () => {
     const [recordingStep, setRecordingStep] = useState(0);
     const scaleValue = useRef(new Animated.Value(1)).current;
     const [videoUris, setVideoUris] = useState<string[]>([]);
-
+    const [recording, setRecording] = useState(false);
     const router = useRouter();
+
+    const [sound, setSound] = useState<Audio.Sound | null>(null);
+
+    useEffect(() => {
+        loadSound();
+        return sound ? () => {
+            sound.unloadAsync();
+        } : undefined;
+    }, []);
+
+    const loadSound = async () => {
+        const { sound } = await Audio.Sound.createAsync(
+            require('../../assets/sounds/gunshot.mp3')
+        );
+        setSound(sound);
+    };
+
 
     const handleRegisterPress = async () => {
         try {
-            await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/users/register`, { email, username, password }).then((response) => {
-                console.log(response);
-                //signIn(email, password);
+            const { status } = await Camera.requestCameraPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert('Error', 'Camera permission is required to continue');
+                return;
             }
-            );
-            await requestCameraPermission();
-            setCameraOpen(true);
+
             setRecordingStep(0);
-            Alert.alert('Snemanje obraza', 'Posnamite sprednji del obraza.');
-            Alert.alert('Snemanje obraza', 'Za vsak poziv pritisnite gumb "Začni snemanje".');
+            setCameraPermission(true);
+            setCameraOpen(true);
+            Alert.alert(
+                'Snemanje obraza',
+                'Poglejte v levo. Za vsak poziv pritisnite gumb "Začni snemanje".',
+                [
+                    { text: "OK", onPress: () => console.log("Alert closed") }
+                ]
+            );
         } catch (error) {
-            console.error('Login failed:', error);
+            console.log('register button press error:', error);
         }
     };
 
 
-    const handleRegister = async () => {
+    const handleRegister = async (newUris: any[]) => {
+
         const formData = new FormData();
         formData.append('email', email);
         formData.append('username', username);
         formData.append('password', password);
 
-        videoUris.forEach(async (uri, index) => {
-            formData.append(`video${index}`, new File([uri], `video${index}.mp4`, { type: "video/mp4" }));
+        newUris.forEach(async (uri, index) => {
+            //@ts-ignore
+            formData.append('video', {
+                uri: uri,
+                type: "video/mp4",
+                name: `video${index}.mp4`
+            })
+
         });
 
         try {
+
             const axiosResponse = await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/users/register`,
                 formData, {
                 headers: {
@@ -59,24 +87,27 @@ const RegisterPage = () => {
             })
 
             if (axiosResponse.status === 201 || axiosResponse.status === 200) {
-                // Handle success scenario
+
                 console.log('Register successful');
             } else {
-                // Handle error scenario
+
+
                 console.error('Register failed with status:', axiosResponse.status);
             }
         } catch (error: any) {
+            Alert.alert('Napaka', 'Nastala je napaka pri pošiljanju videa.');
             if (error.response) {
-                // The request was made and the server responded with a status code
-                // that falls out of the range of 2xx
+
                 console.error('Register failed with response:', error.response.data);
             } else if (error.request) {
-                // The request was made but no response was received
+
                 console.error('Register failed with request:', error.request);
             } else {
-                // Something happened in setting up the request that triggered an error
+
                 console.error('Register failed with message:', error.message);
             }
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -84,38 +115,21 @@ const RegisterPage = () => {
         setRecordingStep((prevStep) => prevStep + 1);
         let alertMessage = '';
         switch (recordingStep) {
+            default:
             case 0:
-                alertMessage = 'Posnamite zgornji del obraza.';
+                alertMessage = 'Poglejte v desno.';
                 break;
             case 1:
-                alertMessage = 'Posnamite levi del obraza.';
+                alertMessage = 'Poglejte proti stropu.';
                 break;
             case 2:
-                alertMessage = 'Posnamite desni del obraza.';
+                alertMessage = 'Poglejte v tla.';
                 break;
-            case 3:
-                alertMessage = 'Posnamite spodnji del obraza.';
-                break;
-            case 4: {
-                handleRegister();
-            }
-            default:
-                try {
-                    // Ko povezemo API z eksternim API uporabimo to
-                    /*const response = await axios.post(`${API_lh}/users/sendVideo`, {
-                        video: videoUris,
-                    });*/
 
-                    Alert.alert('Registracija uspešna!', 'Prijavite se za nadaljevanje.');
 
-                    setCameraOpen(false);
-                    router.push('/login');
 
-                    return;
-                } catch (error) {
-                    console.error('Napaka pri pošiljanju videa na API:', error);
-                    Alert.alert('Napaka', 'Nastala je napaka pri pošiljanju videa.');
-                }
+            //Alert.alert('Napaka', 'Nastala je napaka pri pošiljanju videa.');
+
         }
         Alert.alert('Snemanje obraza', alertMessage);
     };
@@ -126,18 +140,37 @@ const RegisterPage = () => {
             return;
         }
 
+        setRecording(true);
         try {
+
             const options = {
-                maxDuration: 3,
-                VideoQuality: ['480p']
+                maxDuration: 2,
+                MaxFileSize: 3 * 1024 * 1024,
+                mute: true,
             };
 
             const video = await cameraRef.current.recordAsync(options);
+            let newUris = [...videoUris, video.uri];
 
-            setVideoUris((prevUris) => [...prevUris, video.uri]);
+            setVideoUris(newUris);
+
+            if (sound) {
+                await sound.replayAsync();
+            }
 
             setLoading(false);
-            handleNextStep();
+            setRecording(false);
+            if (newUris && newUris.length == 3) {
+                setLoading(true);
+                await handleRegister(newUris).then(() => {
+                    setLoading(false);
+                    setCameraOpen(false);
+                });
+                setRecordingStep(0);
+
+            } else {
+                handleNextStep();
+            }
 
         } catch (error) {
             console.error('Napaka pri snemanju videa:', error);
@@ -147,11 +180,7 @@ const RegisterPage = () => {
         }
     };
 
-    const requestCameraPermission = async () => {
-        const { status } = await Camera.requestCameraPermissionsAsync();
-        setCameraPermission(status === 'granted');
 
-    };
 
     if (loading) {
         return <View className="flex-1 items-center justify-center"><ActivityIndicator size="large" color="#0000ff" /></View>;
@@ -235,7 +264,7 @@ const RegisterPage = () => {
                         mode={'video'}
                     >
 
-                        <View className="mx-auto my-auto w-[80%] h-[80%] border-8 border-white rounded-full bg-transparent " />
+                        <View className={`mx-auto my-auto w-[80%] h-[80%] border-8  rounded-full bg-transparent ${recording ? 'border-red-500' : 'border-white'}`} />
                         <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
                             <Pressable className="absolute bottom-8 w-full px-4" onPress={animateButton}>
                                 <Text className="text-white text-center bg-black py-2 rounded-md"> Začni snemanje </Text>
