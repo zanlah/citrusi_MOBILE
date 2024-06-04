@@ -24,6 +24,12 @@ const MqttPage = () => {
     });
   };
 
+    const publishMessage = () => {
+    if (client) {
+        console.log('Publish pressed');
+    }
+  };
+
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
       <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>MQTT Publish</Text>
@@ -32,7 +38,7 @@ const MqttPage = () => {
         placeholder="Message"
       />
       {/* No need for a connect button */}
-      <Button title="Publish" />
+      <Button title="Publish" onPress={publishMessage} />
     </View>
   );
 };
