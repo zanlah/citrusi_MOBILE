@@ -2,12 +2,8 @@ import { useState, useRef } from 'react';
 import { Modal, Text, TextInput, View, Alert, Pressable, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Camera, CameraView } from 'expo-camera';
-import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import axios from 'axios';
 import { useSession } from "@/context/AuthProvider";
-
-const API = 'http://52.143.190.38/api';
-const API_lh = 'http://164.8.210.28:3000'; // fric test ip
 
 
 const login = () => {
@@ -28,19 +24,17 @@ const login = () => {
         try {
             const photo = await cameraRef.current.takePictureAsync();
 
-            // Pretvorimo sliko v JPEG format
-            const convertedPhoto = await manipulateAsync(
-                photo.uri,
-                [],
-                { format: SaveFormat.JPEG }
-            );
+            const formData = new FormData();
+            formData.append("image", new File([photo.uri], "logo.png", { type: "image/png" }));
+            formData.append('email', email);
+            formData.append('password', password);
 
-            // Posljemo zahtevo na API
-            const response = await axios.post(`${API}/users/loginMobile`, {
-                email: email,
-                password: password,
-                image: convertedPhoto
-            });
+            const response = await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/users/loginMobile`,
+                formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
 
             // Preverimo odgovor
             if (response.status === 201) {
