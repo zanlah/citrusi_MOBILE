@@ -35,6 +35,7 @@ const MqttPage = () => {
       onSuccess: () => {
         console.log('Connected to MQTT broker');
         setClient(mqttClient);
+        setIsConnected(true);
       },
       onFailure: (error) => {
         console.error('Connection error: ', error);
