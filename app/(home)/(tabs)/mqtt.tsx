@@ -48,7 +48,7 @@ const MqttPage = () => {
 
   const publishMessage = () => {
     if (client) {
-      const mqttMessage = new Paho.Message(message + ' gre na pohod');
+      const mqttMessage = new Paho.Message(message);
       mqttMessage.destinationName = 'testni';
       client.send(mqttMessage);
       console.log('Message published');
