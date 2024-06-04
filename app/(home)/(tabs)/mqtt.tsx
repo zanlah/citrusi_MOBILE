@@ -6,6 +6,10 @@ const MqttPage = () => {
   const [client, setClient] = useState<Paho.Client | null>(null);
   const [message, setMessage] = useState('');
 
+  useEffect(() => {
+    connectToMqtt();
+  }, []); // Prazen dependency da se poveže samo 1x
+
   const connectToMqtt = () => {
     const mqttClient = new Paho.Client('test.mosquitto.org', 8080, 'clientID');
 
