@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { Camera, CameraView } from 'expo-camera';
 import axios from 'axios';
 import { Audio } from 'expo-av';
+import { KeyboardAvoidingView, Platform } from 'react-native';
 
 const RegisterPage = () => {
     const [username, setUsername] = useState('');
@@ -66,7 +67,7 @@ const RegisterPage = () => {
         formData.append('email', email);
         formData.append('username', username);
         formData.append('password', password);
-
+        console.log('newUris', newUris);
         newUris.forEach(async (uri, index) => {
             //@ts-ignore
             formData.append('video', {
@@ -204,76 +205,82 @@ const RegisterPage = () => {
     };
 
     return (
-        <View className='flex flex-1 justify-center items-center '>
-            <Text> Registracija </Text>
+        <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
 
-            <Pressable onPress={() => router.push('/login')}>
-                <Text className="text-blue-500"> Prijava? </Text>
-            </Pressable>
+        >
+            <View className='flex flex-1 justify-center items-center bg-white'>
+                <Text className="text-2xl"> Registracija </Text>
 
-            <View className="w-full px-2">
-                <Text className="block text-sm font-medium leading-6 text-gray-900"> Email </Text>
-                <TextInput
-                    className="block w-full rounded-md px-2  py-1.5 text-gray-900 shadow-sm border-2 border-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
+                <Pressable onPress={() => router.push('/login')}>
+                    <Text className="text-blue-500"> Prijava? </Text>
+                </Pressable>
 
-                    value={email}
-                    onChangeText={setEmail}
-                    autoCorrect={false}
-                    autoCapitalize="none"
-                />
-            </View>
+                <View className="w-full px-2">
+                    <Text className="block text-md font-medium leading-6 text-gray-900"> Email </Text>
+                    <TextInput
+                        className="block w-full text-lg  px-2 py-1.5 text-gray-900 shadow-sm border-b-2 border-gray-300  focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
 
-            <View className="w-full px-2">
-                <Text className="block text-sm font-medium leading-6 text-gray-900"> Uporabnisko ime </Text>
-                <TextInput
-                    className="block w-full rounded-md px-2  py-1.5 text-gray-900 shadow-sm border-2 border-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
+                        value={email}
+                        onChangeText={setEmail}
+                        autoCorrect={false}
+                        autoCapitalize="none"
+                    />
+                </View>
 
-                    value={username}
-                    onChangeText={setUsername}
-                    autoCorrect={false}
-                    autoCapitalize="none"
-                />
-            </View>
+                <View className="w-full px-2">
+                    <Text className="block text-md font-medium leading-6 text-gray-900"> Uporabniško ime </Text>
+                    <TextInput
+                        className="block w-full text-lg  px-2 py-1.5 text-gray-900 shadow-sm border-b-2 border-gray-300  focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
 
-            <View className="w-full px-2">
-                <Text className="block text-sm font-medium leading-6 text-gray-900"> Geslo </Text>
-                <TextInput
-                    className="block w-full rounded-md px-2  py-1.5 text-gray-900 shadow-sm border-2 border-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
+                        value={username}
+                        onChangeText={setUsername}
+                        autoCorrect={false}
+                        autoCapitalize="none"
+                    />
+                </View>
 
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry={true}
-                />
-            </View>
+                <View className="w-full px-2">
+                    <Text className="block text-md font-medium leading-6 text-gray-900"> Geslo </Text>
+                    <TextInput
+                        className="block w-full text-lg  px-2 py-1.5 text-gray-900 shadow-sm border-b-2 border-gray-300  focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
 
-            <Pressable className="px-4 py-2 mt-2 bg-black text-white dark:bg-black rounded-md" onPress={handleRegisterPress}>
-                <Text className="text-white text-lg"> Registracija </Text>
-            </Pressable>
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry={true}
+                    />
+                </View>
 
-            {cameraOpen && cameraPermission && (
-                <Modal
-                    animationType="slide"
-                    transparent={false}
-                    visible={cameraOpen}
-                    onRequestClose={() => setCameraOpen(false)}
-                >
-                    <CameraView
-                        className='flex-1 w-full h-full'
-                        facing={'front'}
-                        ref={cameraRef}
-                        mode={'video'}
+                <Pressable className="px-4 py-2 mt-5 bg-black text-white dark:bg-black rounded-md" onPress={handleRegisterPress}>
+                    <Text className="text-white text-lg"> Registracija </Text>
+                </Pressable>
+
+                {cameraOpen && cameraPermission && (
+                    <Modal
+                        animationType="slide"
+                        transparent={false}
+                        visible={cameraOpen}
+                        onRequestClose={() => setCameraOpen(false)}
                     >
+                        <CameraView
+                            className='flex-1 w-full h-full'
+                            facing={'front'}
+                            ref={cameraRef}
+                            mode={'video'}
+                        >
 
-                        <View className={`mx-auto my-auto w-[80%] h-[80%] border-8  rounded-full bg-transparent ${recording ? 'border-red-500' : 'border-white'}`} />
-                        <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
-                            <Pressable className="absolute bottom-8 w-full px-4" onPress={animateButton}>
-                                <Text className="text-white text-center bg-black py-2 rounded-md"> Začni snemanje </Text>
-                            </Pressable>
-                        </Animated.View>
-                    </CameraView>
-                </Modal>
-            )}
-        </View>
+                            <View className={`mx-auto my-auto w-[80%] h-[80%] border-8  rounded-full bg-transparent ${recording ? 'border-red-500' : 'border-white'}`} />
+                            <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
+                                <Pressable className="absolute bottom-8 w-full px-4" onPress={animateButton}>
+                                    <Text className="text-white text-center bg-black py-2 rounded-md"> Začni snemanje </Text>
+                                </Pressable>
+                            </Animated.View>
+                        </CameraView>
+                    </Modal>
+                )}
+            </View>
+        </KeyboardAvoidingView>
     );
 };
 

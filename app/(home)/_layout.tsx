@@ -1,34 +1,56 @@
+import { Tabs } from 'expo-router';
+import React from 'react';
+import { SiReact } from '@icons-pack/react-simple-icons';
+import { TabBarIcon } from '@/components/navigation/TabBarIcon';
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { Redirect, Stack } from 'expo-router';
 
-import { Slot, Stack } from 'expo-router';
+import { useSession } from '@/context/AuthProvider';
 
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+export default function TabLayout() {
+  const { session, isLoading } = useSession();
+  const colorScheme = useColorScheme();
+  if (!session) {
+    // On web, static rendering will stop here as the user is not authenticated
+    // in the headless Node process that the pages are rendered in.
+    return <Redirect href="/login" />;
+  }
+  return (
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        headerShown: true,
+      }}>
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Domov',
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
+          ),
+        }}
+      />
 
-import { SessionProvider } from '@/context/AuthProvider';
+      <Tabs.Screen
+        name="map"
+        options={{
+          title: 'Zemljevid',
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
 
-/*
-export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: "/login",
-};*/
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-//SplashScreen.preventAutoHideAsync();
-
-export function RootLayout() {
-
-
-    return (
-
-
-        <SessionProvider>
-            <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-
-            </Stack>
-
-        </SessionProvider>
-
-
-    );
+        options={{
+          title: 'Profil',
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name={focused ? 'person' : 'person-outline'} color={color} />
+          ),
+        }}
+      />
+    </Tabs>
+  );
 }
-

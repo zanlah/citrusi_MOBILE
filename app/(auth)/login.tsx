@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { Camera, CameraView } from 'expo-camera';
 import axios from 'axios';
 import { useSession } from "@/context/AuthProvider";
-
+import { KeyboardAvoidingView, Platform } from 'react-native';
 
 const login = () => {
     const [email, setEmail] = useState('');
@@ -19,6 +19,7 @@ const login = () => {
 
     // Klik gumba "Potrdi sliko", za avtentikacijo uporabnika
     const handleUserLogin = async () => {
+
         if (!cameraRef.current) return;
         setLoading(true);
         try {
@@ -65,6 +66,8 @@ const login = () => {
 
     // Klik gumba "Prijava", da odpre kamero za faceID
     const handleLoginButton = async () => {
+        signIn();
+        router.push('/');
         try {
             await requestCameraPermission();
             setCameraOpen(true);
@@ -84,57 +87,63 @@ const login = () => {
     }
 
     return (
-        <View className='flex flex-1 justify-center items-center '>
-            <Text >Prijava {process.env.BASE_URL}</Text>
-            <Pressable onPress={() => router.push('/register')}>
-                <Text className="text-blue-500">Registracija?</Text>
-            </Pressable>
-            <View className="w-full px-2">
-                <Text className="block text-sm font-medium leading-6 text-gray-900"> Email </Text>
-                <TextInput
-                    className="block w-full rounded-md px-2  py-1.5 text-gray-900 shadow-sm border-2 border-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
+        <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
 
-                    value={email}
-                    onChangeText={setEmail}
-                    autoCorrect={false}
-                    autoCapitalize="none"
-                />
-            </View>
-            <View className="w-full px-2">
-                <Text className="block text-sm font-medium leading-6 text-gray-900"> Geslo </Text>
-                <TextInput
-                    className="block w-full rounded-md px-2  py-1.5 text-gray-900 shadow-sm border-2 border-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
+        >
+            <View className='flex flex-1 justify-center items-center bg-white'>
+                <Text className="text-2xl">Prijava {process.env.BASE_URL}</Text>
+                <Pressable onPress={() => router.push('/register')}>
+                    <Text className="text-blue-500">Registracija?</Text>
+                </Pressable>
+                <View className="w-full px-2">
+                    <Text className="block text-md font-medium leading-6 text-gray-900"> Email </Text>
+                    <TextInput
+                        className="block w-full text-lg  px-2  py-1.5 text-gray-900 shadow-sm border-b-2 border-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
 
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry={true}
-                />
-            </View>
-            <Pressable className="px-4 py-2 mt-2 bg-black text-white dark:bg-black rounded-md" onPress={handleLoginButton}>
-                <Text className="text-white text-lg"> Prijava </Text>
-            </Pressable>
+                        value={email}
+                        onChangeText={setEmail}
+                        autoCorrect={false}
+                        autoCapitalize="none"
+                    />
+                </View>
+                <View className="w-full px-2 mt-3">
+                    <Text className="block text-md font-medium leading-6 text-gray-900"> Geslo </Text>
+                    <TextInput
+                        className="block w-full text-lg  px-2 py-1.5 text-gray-900 shadow-sm border-b-2 border-gray-300  focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
+                        placeholder='Geslo'
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry={true}
+                    />
+                </View>
+                <Pressable className="px-4 py-2 mt-5 bg-black text-white dark:bg-black rounded-md" onPress={handleLoginButton}>
+                    <Text className="text-white text-lg"> Prijava </Text>
+                </Pressable>
 
-            {cameraOpen && cameraPermission && (
-                <Modal
-                    animationType="slide"
-                    transparent={false}
-                    visible={cameraOpen}
-                    onRequestClose={() => setCameraOpen(false)}
-                >
-                    <CameraView
-                        className='flex-1 w-full h-full'
-                        facing={"front"}
-                        ref={cameraRef}
+                {cameraOpen && cameraPermission && (
+                    <Modal
+                        animationType="slide"
+                        transparent={false}
+                        visible={cameraOpen}
+                        onRequestClose={() => setCameraOpen(false)}
                     >
+                        <CameraView
+                            className='flex-1 w-full h-full'
+                            facing={"front"}
+                            ref={cameraRef}
+                        >
 
-                        <View className="mx-auto my-auto w-[80%] h-[80%] border-8 border-white rounded-full bg-transparent " />
-                        <Pressable className="absolute bottom-8 w-full px-4" onPress={handleUserLogin}>
-                            <Text className="text-white text-center bg-black py-2 rounded-md">Potrdi sliko</Text>
-                        </Pressable>
-                    </CameraView>
-                </Modal>
-            )}
-        </View>
+                            <View className="mx-auto my-auto w-[80%] h-[80%] border-8 border-white rounded-full bg-transparent " />
+                            <Pressable className="absolute bottom-8 w-full px-4" onPress={handleUserLogin}>
+                                <Text className="text-white text-center bg-black py-2 rounded-md">Potrdi sliko</Text>
+                            </Pressable>
+                        </CameraView>
+                    </Modal>
+                )}
+            </View>
+        </KeyboardAvoidingView>
     );
 };
 
