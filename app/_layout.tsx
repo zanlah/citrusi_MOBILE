@@ -37,8 +37,10 @@ export default function Root() {
           <Stack.Screen name="(home)" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)/register" options={{ headerShown: false }} />
+          <Stack.Screen name="route/start/[id]" options={{ headerShown: true, headerBackTitle: "nazaj", title: "pot", presentation: 'modal', }} />
 
           <Stack.Screen name="route/[id]" options={{ headerShown: true, headerBackTitle: "nazaj", title: "pot" }} />
+          <Stack.Screen name="profileImage" options={{ headerShown: true, headerBackTitle: "nazaj", title: "spremeni sliko", presentation: 'modal' }} />
         </Stack>
         {/* <Slot /> */}
       </SessionProvider>
