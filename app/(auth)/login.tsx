@@ -120,7 +120,7 @@ const login = () => {
                 <View className="w-full px-3">
                     <Text className="block text-md font-medium leading-6 text-gray-900 dark:text-white"> Email </Text>
                     <TextInput
-                        className="block w-full text-lg  px-2  py-1.5 text-gray-900 shadow-sm border-b-[1px] border-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
+                        className="block w-full text-lg  px-2  py-1.5 text-gray-900 dark:text-white shadow-sm border-b-[1px] border-gray-300  focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
                         placeholder='Email'
                         placeholderTextColor="rgb(156 163 175)"
                         value={email}
@@ -132,7 +132,7 @@ const login = () => {
                 <View className="w-full px-3 mt-3">
                     <Text className="block text-md font-medium leading-6 text-gray-900 dark:text-white"> Geslo </Text>
                     <TextInput
-                        className="block w-full text-lg  px-2 py-1.5 text-gray-900 shadow-sm border-b-[1px] border-gray-300  focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
+                        className="block w-full text-lg  px-2 py-1.5  text-gray-900 dark:text-white shadow-sm border-b-[1px] border-gray-300  focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
                         placeholder='Geslo'
                         placeholderTextColor="rgb(156 163 175)"
                         value={password}
