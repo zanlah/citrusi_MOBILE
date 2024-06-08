@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as Paho from 'paho-mqtt';
-import MqttPublishSubscribe from './mqttPublishSubscribe';
+import MqttPublishSubscribe from '@/app/mqttPublishSubscribe';
 
 const MqttPage = () => {
   const [client, setClient] = useState<Paho.Client | null>(null);

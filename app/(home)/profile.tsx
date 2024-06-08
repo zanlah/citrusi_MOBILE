@@ -30,7 +30,6 @@ const profile = () => {
 
             <View className="mt-5 ">
                 <Text className="text-md text-gray-600">Družabno</Text>
-
                 <View className="rounded-2xl bg-white dark:bg-zinc-900 mt-1">
                     <View className="p-2 mt-1 flex justify-between  flex-row ">
                         <Text className="text-lg text-gray-600  dark:text-white flex-auto">Dodaj prijatelja</Text>
@@ -48,6 +47,7 @@ const profile = () => {
                         <Text className="text-lg text-gray-600 dark:text-white ">Seznam prijateljev</Text>
                         <Entypo name="chevron-right" size={24} color="rgb(156 163 175)" />
                     </View>
+                    </Pressable>
                 </View>
             </View>
 
