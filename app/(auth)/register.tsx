@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Modal, Text, TextInput, View, Alert, Pressable, ActivityIndicator, Animated, Easing } from 'react-native';
+import { Modal, Text, TextInput, View, Alert, Pressable, ActivityIndicator, Animated, Easing, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Camera, CameraView } from 'expo-camera';
 import axios from 'axios';
@@ -9,6 +9,7 @@ import { KeyboardAvoidingView, Platform } from 'react-native';
 const RegisterPage = () => {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
+    const [name, setName] = useState('');
     const [password, setPassword] = useState('');
     const cameraRef = useRef<any>(null);
     const [cameraOpen, setCameraOpen] = useState(false);
@@ -19,7 +20,7 @@ const RegisterPage = () => {
     const [videoUris, setVideoUris] = useState<string[]>([]);
     const [recording, setRecording] = useState(false);
     const router = useRouter();
-
+    const [currentOrder, setCurrentOrder] = useState("");
     const [sound, setSound] = useState<Audio.Sound | null>(null);
 
     useEffect(() => {
@@ -38,6 +39,10 @@ const RegisterPage = () => {
 
 
     const handleRegisterPress = async () => {
+        if (!username || !email || !name || !password) {
+            Alert.alert('Napaka', 'Izpolnite vsa polja!');
+            return;
+        }
         try {
             const { status } = await Camera.requestCameraPermissionsAsync();
             if (status !== 'granted') {
@@ -48,9 +53,10 @@ const RegisterPage = () => {
             setRecordingStep(0);
             setCameraPermission(true);
             setCameraOpen(true);
+            setCurrentOrder('Poglejte v levo.');
             Alert.alert(
                 'Snemanje obraza',
-                'Poglejte v levo. Za vsak poziv pritisnite gumb "Začni snemanje".',
+                'Poglejte v levo. Po vsakem pozivu pritisnite gumb "Začni snemanje".',
                 [
                     { text: "OK", onPress: () => console.log("Alert closed") }
                 ]
@@ -63,10 +69,12 @@ const RegisterPage = () => {
 
     const handleRegister = async (newUris: any[]) => {
 
+
         const formData = new FormData();
         formData.append('email', email);
         formData.append('username', username);
         formData.append('password', password);
+        formData.append('name', name);
         console.log('newUris', newUris);
         newUris.forEach(async (uri, index) => {
             //@ts-ignore
@@ -93,19 +101,19 @@ const RegisterPage = () => {
             } else {
 
 
-                console.error('Register failed with status:', axiosResponse.status);
+                console.log('Register failed with status:', axiosResponse.status);
             }
         } catch (error: any) {
-            Alert.alert('Napaka', 'Nastala je napaka pri pošiljanju videa.');
+            Alert.alert('Napaka', 'Prišlo je do napake.');
             if (error.response) {
 
-                console.error('Register failed with response:', error.response.data);
+                console.log('Register failed with response:', error.response.data);
             } else if (error.request) {
 
-                console.error('Register failed with request:', error.request);
+                console.log('Register failed with request:', error.request);
             } else {
 
-                console.error('Register failed with message:', error.message);
+                console.log('Register failed with message:', error.message);
             }
         } finally {
             setLoading(false);
@@ -119,6 +127,7 @@ const RegisterPage = () => {
             default:
             case 0:
                 alertMessage = 'Poglejte v desno.';
+
                 break;
             case 1:
                 alertMessage = 'Poglejte proti stropu.';
@@ -132,6 +141,7 @@ const RegisterPage = () => {
             //Alert.alert('Napaka', 'Nastala je napaka pri pošiljanju videa.');
 
         }
+        setCurrentOrder(alertMessage);
         Alert.alert('Snemanje obraza', alertMessage);
     };
 
@@ -161,7 +171,7 @@ const RegisterPage = () => {
 
             setLoading(false);
             setRecording(false);
-            if (newUris && newUris.length == 3) {
+            if (newUris && newUris.length == 4) {
                 setLoading(true);
                 await handleRegister(newUris).then(() => {
                     setLoading(false);
@@ -184,7 +194,7 @@ const RegisterPage = () => {
 
 
     if (loading) {
-        return <View className="flex-1 items-center justify-center"><ActivityIndicator size="large" color="#0000ff" /></View>;
+        return <View className="flex-1 items-center justify-center dark:bg-black bg-white"><ActivityIndicator size="large" className="dark:text-white text-indigo-600" /></View>;
     }
 
     const animateButton = () => {
@@ -210,30 +220,50 @@ const RegisterPage = () => {
             behavior={Platform.OS === "ios" ? "padding" : "height"}
 
         >
-            <View className='flex flex-1 justify-center items-center bg-white'>
-                <Text className="text-2xl"> Registracija </Text>
+            <View className='flex flex-1 justify-center items-center  bg-white dark:bg-black'>
+                <Image
+                    className="w-28 h-28"
+                    src={`${process.env.EXPO_PUBLIC_API_URL}/uploads/image.png`}></Image>
+                <View className="mt-2">
+                    <Text className="text-2xl dark:text-white">Registracija</Text>
+                </View>
 
                 <Pressable onPress={() => router.push('/login')}>
                     <Text className="text-blue-500"> Prijava? </Text>
                 </Pressable>
 
-                <View className="w-full px-2">
-                    <Text className="block text-md font-medium leading-6 text-gray-900"> Email </Text>
+                <View className="w-full px-3">
+                    <Text className="block text-md font-medium leading-6 text-gray-900 dark:text-white"> Ime </Text>
                     <TextInput
-                        className="block w-full text-lg  px-2 py-1.5 text-gray-900 shadow-sm border-b-2 border-gray-300  focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
+                        className="block w-full text-lg  px-2 py-1.5 text-gray-900 dark:text-white shadow-sm border-b-[1px] border-gray-300  focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
+                        value={name}
+                        placeholder='Ime'
+                        placeholderTextColor="rgb(156 163 175)"
+                        onChangeText={setName}
+                        autoCorrect={false}
+                        autoCapitalize="none"
+                    />
+                </View>
 
+                <View className="w-full px-3 mt-3">
+                    <Text className="block text-md font-medium leading-6 text-gray-900 dark:text-white"> Email </Text>
+                    <TextInput
+                        className="block w-full text-lg  px-2 py-1.5 text-gray-900 dark:text-white shadow-sm border-b-[1px] border-gray-300  focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
                         value={email}
+                        placeholderTextColor="rgb(156 163 175)"
+                        placeholder='Email'
                         onChangeText={setEmail}
                         autoCorrect={false}
                         autoCapitalize="none"
                     />
                 </View>
 
-                <View className="w-full px-2">
-                    <Text className="block text-md font-medium leading-6 text-gray-900"> Uporabniško ime </Text>
+                <View className="w-full px-3 mt-3">
+                    <Text className="block text-md font-medium leading-6 text-gray-900 dark:text-white"> Uporabniško ime </Text>
                     <TextInput
-                        className="block w-full text-lg  px-2 py-1.5 text-gray-900 shadow-sm border-b-2 border-gray-300  focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
-
+                        className="block w-full text-lg  px-2 py-1.5 text-gray-900 dark:text-white shadow-sm border-b-[1px] border-gray-300  focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
+                        placeholderTextColor="rgb(156 163 175)"
+                        placeholder='Uporabniško ime'
                         value={username}
                         onChangeText={setUsername}
                         autoCorrect={false}
@@ -241,20 +271,22 @@ const RegisterPage = () => {
                     />
                 </View>
 
-                <View className="w-full px-2">
-                    <Text className="block text-md font-medium leading-6 text-gray-900"> Geslo </Text>
+                <View className="w-full px-3 mt-3">
+                    <Text className="block text-md font-medium leading-6 text-gray-900 dark:text-white"> Geslo </Text>
                     <TextInput
-                        className="block w-full text-lg  px-2 py-1.5 text-gray-900 shadow-sm border-b-2 border-gray-300  focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
-
+                        className="block w-full text-lg  px-2 py-1.5 text-gray-900 dark:text-white shadow-sm border-b-[1px] border-gray-300  focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
+                        placeholder='Geslo'
+                        placeholderTextColor="rgb(156 163 175)"
                         value={password}
                         onChangeText={setPassword}
                         secureTextEntry={true}
                     />
                 </View>
 
-                <Pressable className="px-4 py-2 mt-5 bg-black text-white dark:bg-black rounded-md" onPress={handleRegisterPress}>
-                    <Text className="text-white text-lg"> Registracija </Text>
+                <Pressable className="px-4 py-2 mt-5 bg-black text-white dark:bg-white dark:text-black rounded-md" onPress={handleRegisterPress}>
+                    <Text className="text-lg"> Registracija </Text>
                 </Pressable>
+
 
                 {cameraOpen && cameraPermission && (
                     <Modal
@@ -269,11 +301,14 @@ const RegisterPage = () => {
                             ref={cameraRef}
                             mode={'video'}
                         >
-
-                            <View className={`mx-auto my-auto w-[80%] h-[80%] border-8  rounded-full bg-transparent ${recording ? 'border-red-500' : 'border-white'}`} />
+                            <View className="bg-red-700 rounded-2xl top-16 mx-auto w-[80%] flex justify-center items-center">
+                                <Text className="font-bold py-2 text-lg  ">{currentOrder}</Text>
+                            </View>
+                            <View className={`mx-auto my-auto w-[80%] h-[55%] border-8  rounded-full bg-transparent ${recording ? 'border-red-500' : 'border-white'}`} />
                             <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
-                                <Pressable className="absolute bottom-8 w-full px-4" onPress={animateButton}>
-                                    <Text className="text-white text-center bg-black py-2 rounded-md"> Začni snemanje </Text>
+
+                                <Pressable className=" bottom-8 mx-auto w-[80%] bg-black  text-white rounded-2xl py-3" onPress={animateButton}>
+                                    <Text className="text-white text-center py-2 font-bold">Začni snemanje</Text>
                                 </Pressable>
                             </Animated.View>
                         </CameraView>

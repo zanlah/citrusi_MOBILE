@@ -1,10 +1,11 @@
 import { useState, useRef } from 'react';
-import { Modal, Text, TextInput, View, Alert, Pressable, ActivityIndicator } from 'react-native';
+import { Modal, Text, TextInput, View, Alert, Pressable, ActivityIndicator, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Camera, CameraView } from 'expo-camera';
 import axios from 'axios';
 import { useSession } from "@/context/AuthProvider";
 import { KeyboardAvoidingView, Platform } from 'react-native';
+import { Redirect } from 'expo-router';
 
 const login = () => {
     const [email, setEmail] = useState('');
@@ -15,11 +16,11 @@ const login = () => {
     const { signIn } = useSession();
     const [loading, setLoading] = useState(false);
     const router = useRouter();
-
+    const { session, isLoading } = useSession();
 
     // Klik gumba "Potrdi sliko", za avtentikacijo uporabnika
     const handleUserLogin = async () => {
-
+        console.log(process.env.EXPO_PUBLIC_API_URL)
         if (!cameraRef.current) return;
         setLoading(true);
         try {
@@ -50,14 +51,22 @@ const login = () => {
                 setLoading(false);
                 setCameraOpen(false);
                 console.log('Login success:', response.data);
-                signIn(); // Prijavimo uporabnika
+
+                signIn({
+                    token: response.data.token,
+                    user: response.data.user
+                });
+
                 router.push('/'); // Ga preusmerimo na zacetno stran
             } else {
-                console.error('Login error with status:', response.status);
+                console.log('Login failed:', response.data);
+                Alert.alert('Napaka', 'Prišlo je do napake v prijavi ' + response.status);
                 Alert.alert('FaceID error', 'There was an error with your authentication.');
             }
         } catch (error) {
-            console.error('Login failed: ', error);
+            console.error('Login error:', error);
+            Alert.alert('Napaka', 'Prišlo je do napake v prijavi');
+
         } finally {
             setLoading(false);
             setCameraOpen(false);
@@ -66,6 +75,12 @@ const login = () => {
 
     // Klik gumba "Prijava", da odpre kamero za faceID
     const handleLoginButton = async () => {
+
+        if (!email || !password) {
+            Alert.alert('Napaka', 'Izpolnite vsa polja!');
+            return;
+        }
+
         try {
             await requestCameraPermission();
             setCameraOpen(true);
@@ -80,44 +95,56 @@ const login = () => {
 
     };
 
-    if (loading) {
-        return <View className="flex-1 items-center justify-center"><ActivityIndicator size="large" color="#0000ff" /></View>;
+    if (loading || isLoading) {
+        return <View className="flex-1 items-center justify-center dark:bg-black bg-white"><ActivityIndicator size="large" className="dark:text-white text-indigo-600" /></View>;
     }
 
+    if (session) {
+        // On web, static rendering will stop here as the user is not authenticated
+        // in the headless Node process that the pages are rendered in.
+        return <Redirect href="/" />;
+    }
     return (
         <KeyboardAvoidingView
             style={{ flex: 1 }}
             behavior={Platform.OS === "ios" ? "padding" : "height"}
 
         >
-            <View className='flex flex-1 justify-center items-center bg-white'>
-                <Text className="text-2xl">Prijava {process.env.BASE_URL}</Text>
+            <View className='flex flex-1 justify-center items-center bg-white dark:bg-black'>
+                <Image
+                    className="w-28 h-28"
+                    src={`${process.env.EXPO_PUBLIC_API_URL}/uploads/image.png`}></Image>
+                <View className="mt-2">
+                    <Text className="text-2xl dark:text-white">Prijava</Text>
+                </View>
                 <Pressable onPress={() => router.push('/register')}>
-                    <Text className="text-blue-500">Registracija?</Text>
+                    <Text className="text-blue-500 ">Registracija?</Text>
                 </Pressable>
-                <View className="w-full px-2">
-                    <Text className="block text-md font-medium leading-6 text-gray-900"> Email </Text>
+                <View className="w-full px-3">
+                    <Text className="block text-md font-medium leading-6 text-gray-900 dark:text-white"> Email </Text>
                     <TextInput
-                        className="block w-full text-lg  px-2  py-1.5 text-gray-900 shadow-sm border-b-2 border-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
-
+                        className="block w-full text-lg  px-2  py-1.5 text-gray-900 dark:text-white shadow-sm border-b-[1px] border-gray-300  focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
+                        placeholder='Email'
+                        placeholderTextColor="rgb(156 163 175)"
                         value={email}
                         onChangeText={setEmail}
                         autoCorrect={false}
                         autoCapitalize="none"
                     />
                 </View>
-                <View className="w-full px-2 mt-3">
-                    <Text className="block text-md font-medium leading-6 text-gray-900"> Geslo </Text>
+                <View className="w-full px-3 mt-3">
+                    <Text className="block text-md font-medium leading-6 text-gray-900 dark:text-white"> Geslo </Text>
                     <TextInput
-                        className="block w-full text-lg  px-2 py-1.5 text-gray-900 shadow-sm border-b-2 border-gray-300  focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
+                        className="block w-full text-lg  px-2 py-1.5  text-gray-900 dark:text-white shadow-sm border-b-[1px] border-gray-300  focus:ring-2 focus:ring-inset focus:border-indigo-600 sm:text-sm sm:leading-6"
                         placeholder='Geslo'
+                        placeholderTextColor="rgb(156 163 175)"
                         value={password}
                         onChangeText={setPassword}
                         secureTextEntry={true}
                     />
                 </View>
-                <Pressable className="px-4 py-2 mt-5 bg-black text-white dark:bg-black rounded-md" onPress={handleLoginButton}>
-                    <Text className="text-white text-lg"> Prijava </Text>
+                <Pressable className="px-4 py-2 mt-5 bg-black text-white dark:bg-white dark:text-black rounded-md" onPress={handleLoginButton}>
+                    <Text className=" text-lg"> Prijava </Text>
                 </Pressable>
 
                 {cameraOpen && cameraPermission && (
@@ -133,9 +160,9 @@ const login = () => {
                             ref={cameraRef}
                         >
 
-                            <View className="mx-auto my-auto w-[80%] h-[80%] border-8 border-white rounded-full bg-transparent " />
-                            <Pressable className="absolute bottom-8 w-full px-4" onPress={handleUserLogin}>
-                                <Text className="text-white text-center bg-black py-2 rounded-md">Potrdi sliko</Text>
+                            <View className="mx-auto my-auto w-[80%] h-[55%] border-8 border-white rounded-full bg-transparent " />
+                            <Pressable className=" bottom-8 mx-auto w-[80%] bg-black  text-white rounded-2xl py-3" onPress={handleUserLogin}>
+                                <Text className="text-white text-center py-2 font-bold">Potrdi sliko</Text>
                             </Pressable>
                         </CameraView>
                     </Modal>
