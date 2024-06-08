@@ -54,8 +54,7 @@ const login = () => {
                 signIn({
                     token: response.data.token,
                     user: response.data.user
-                }); // Update the type of UserData to include the 'token' property
-                //signIn(); // Prijavimo uporabnika
+                });
                 router.push('/'); // Ga preusmerimo na zacetno stran
             } else {
                 console.log('Login failed:', response.data);

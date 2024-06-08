@@ -77,7 +77,7 @@ const RouteDetails = () => {
                         </View>
                     </>
                 }
-                {inProximity &&
+                {inProximity || 1 &&
                     <Pressable className="px-4 py-4 mt-5 justify-center items-center bg-green-600 text-white  rounded-md" onPress={startRoute} >
                         <Text className="text-white text-xl font-bold"> začni </Text>
                     </Pressable>

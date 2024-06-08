@@ -66,7 +66,7 @@ const HomeScreen = () => {
                 <Text className="dark:text-white">{item.distanceFromCurrentLocation / 1000} km</Text>
                 <Text className="dark:text-white">{formatTime(item.duration)} </Text>
               </View>
-              {item.distanceFromCurrentLocation / 1000 < 10 &&
+              {item.distanceFromCurrentLocation / 1000 < 300 &&
                 <Pressable className="bg-green-600 py-2  rounded-lg mt-1" onPress={() => { startRoute(item.id_route) }} >
                   <Text className="text-white text-center  ">Začni pot!</Text>
                 </Pressable>

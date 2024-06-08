@@ -6,6 +6,7 @@ import axios from 'axios';
 import { useLocalSearchParams } from 'expo-router';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import proj4 from 'proj4';
+import { useSession } from '../../../context/AuthProvider';
 
 type RouteDetails = {
     id: string;
@@ -17,7 +18,6 @@ type RouteDetails = {
     difficulty: string | null;
     hasSafetyGear: boolean;
     hutClosed: boolean;
-    // Add other route properties as needed
 }
 
 const fromProjection = 'EPSG:3857';
@@ -34,11 +34,8 @@ const RouteDetails = () => {
     const [location, setLocation] = useState<any>(null);
     const [errorMsg, setErrorMsg] = useState<any>(null);
     const [path, setPath] = useState([]);
-
-    const convertCoordinates = (coords: number[]) => {
-        const converted = proj4(fromProjection, toProjection, coords);
-        return converted;
-    };
+    const { session } = useSession();
+    const { id: userID, token } = session;
 
 
     useEffect(() => {
@@ -133,9 +130,16 @@ const RouteDetails = () => {
         if (timerOn) {
             try {
                 const response = await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/routes/end-route`, {
-                    routeId: id, // Assuming `id` is the ID of the route
+                    withCredentials: true,
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    id_route: id, // Assuming `id` is the ID of the route
+                    id_user: userID,
                     duration: timer // `timer` stores the total seconds elapsed
-                });
+                },
+                );
                 if (response.status === 200) {
                     Alert.alert("Success", "Route ended and time saved successfully.");
                 } else {
@@ -197,7 +201,7 @@ const RouteDetails = () => {
                 {location && (
                     <MapView
                         ref={mapRef}
-                        className="w-full mt-2 h-[300]"
+                        className="w-full mt-2 h-[350]"
                         initialRegion={{
                             latitude: location.latitude,
                             longitude: location.longitude,
@@ -221,31 +225,6 @@ const RouteDetails = () => {
         </>
     );
 }
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: 'gray',
-        paddingTop: 20,
-        padding: 8
-    },
-    centered: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center'
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold'
-    },
-    subtitle: {
-        fontSize: 18,
-        marginTop: 8,
-        color: 'gray'
-    },
-    map: {
-        width: '100%',
-        height: 300
-    }
-});
+
 
 export default RouteDetails;
