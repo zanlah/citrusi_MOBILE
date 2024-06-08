@@ -33,7 +33,7 @@ const login = () => {
                 type: "image/jpeg",
                 name: "photo.jpg"
             })
-            //  formData.append("image", new File([photo.uri], "logo.png", { type: "image/png" }));
+            //formData.append("image", new File([photo.uri], "logo.jpg", { type: "image/jpg" }));
             //formData.append('image', photo);
             formData.append('email', email);
             formData.append('password', password);
@@ -50,8 +50,8 @@ const login = () => {
                 setLoading(false);
                 setCameraOpen(false);
                 console.log('Login success:', response.data);
-                //signIn(); // Prijavimo uporabnika
-                //router.push('/'); // Ga preusmerimo na zacetno stran
+                signIn(); // Prijavimo uporabnika
+                router.push('/'); // Ga preusmerimo na zacetno stran
             } else {
                 console.error('Login error with status:', response.status);
                 Alert.alert('FaceID error', 'There was an error with your authentication.');
@@ -66,8 +66,6 @@ const login = () => {
 
     // Klik gumba "Prijava", da odpre kamero za faceID
     const handleLoginButton = async () => {
-        signIn();
-        router.push('/');
         try {
             await requestCameraPermission();
             setCameraOpen(true);
