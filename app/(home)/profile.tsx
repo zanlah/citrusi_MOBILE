@@ -1,7 +1,18 @@
 import React from 'react'
-import { View, Text, Button, Image, ScrollView } from 'react-native'
+import { View, Text, Button, Image, ScrollView, Pressable } from 'react-native'
 import { Entypo } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { Redirect } from 'expo-router';
 const profile = () => {
+
+    const viewFriends = () => {
+        router.navigate('/friends');
+    }
+
+    const sendMqttMessage = () => {
+        router.navigate('/message');
+    }
+
     return (
 
         <ScrollView className="bg-gray-100 min-h-full pt-5 px-3 pb-10">
@@ -18,20 +29,21 @@ const profile = () => {
             <View className="mt-5 ">
                 <Text className="text-md text-gray-600">Družabno</Text>
                 <View className="rounded-2xl bg-white mt-1">
-                    <View className="p-2 mt-1 flex justify-between  flex-row ">
-                        <Text className="text-lg text-gray-600 flex-auto">Dodaj prijatelja</Text>
-                        <Entypo name="chevron-right" size={24} color="rgb(156 163 175)" />
-                    </View>
                     <View className="border-t-[1px] border-gray-200 mx-2 " />
+                    <Pressable onPress={sendMqttMessage}>
                     <View className="p-2 mt-1 flex justify-between flex-row">
-                        <Text className="text-lg text-gray-600 ">Izzovi prijatelja</Text>
+                        <Text className="text-lg text-gray-600 ">Pošlji sporočilo</Text>
                         <Entypo name="chevron-right" size={24} color="rgb(156 163 175)" />
                     </View>
+                    </Pressable>
+
                     <View className="border-t-[1px] border-gray-200 mx-2 " />
+                    <Pressable onPress={viewFriends}>
                     <View className="p-2 mt-1 flex justify-between flex-row">
-                        <Text className="text-lg text-gray-600 ">Seznam prijateljev</Text>
+                        <Text className="text-lg text-gray-600 ">Prijatelji</Text>
                         <Entypo name="chevron-right" size={24} color="rgb(156 163 175)" />
                     </View>
+                    </Pressable>
                 </View>
             </View>
             <View className="mt-5 ">
