@@ -1,3 +1,4 @@
+
 import React from 'react'
 import { View, Text, Button, Image, ScrollView, Pressable } from 'react-native'
 import { Entypo } from '@expo/vector-icons';
@@ -27,12 +28,9 @@ const profile = () => {
 
             </Pressable>
 
-            <View>
-
-
-            </View>
             <View className="mt-5 ">
                 <Text className="text-md text-gray-600">Družabno</Text>
+
                 <View className="rounded-2xl bg-white dark:bg-zinc-900 mt-1">
                     <View className="p-2 mt-1 flex justify-between  flex-row ">
                         <Text className="text-lg text-gray-600  dark:text-white flex-auto">Dodaj prijatelja</Text>
@@ -40,18 +38,22 @@ const profile = () => {
                     </View>
                     <View className="border-t-[1px] border-gray-200 dark:border-zinc-600 mx-2 " />
                     <View className="p-2 mt-1 flex justify-between flex-row">
+
                         <Text className="text-lg text-gray-600 dark:text-white ">Izzovi prijatelja</Text>
                         <Entypo name="chevron-right" size={24} color="rgb(156 163 175)" />
                     </View>
                     <View className="border-t-[1px] border-gray-200 dark:border-zinc-600 mx-2 " />
                     <View className="p-2 mt-1 flex justify-between flex-row">
+
                         <Text className="text-lg text-gray-600 dark:text-white ">Seznam prijateljev</Text>
                         <Entypo name="chevron-right" size={24} color="rgb(156 163 175)" />
                     </View>
                 </View>
             </View>
+
             <View className="mt-5 ">
                 <Text className="text-md text-gray-600">Nastavitve</Text>
+
                 <View className="rounded-2xl  bg-white  dark:bg-zinc-900 mt-1">
                     <View className="p-2 mt-1 flex justify-between  flex-row ">
                         <Text className="text-lg text-gray-600 dark:text-white flex-auto">Spletna stran</Text>
@@ -59,19 +61,21 @@ const profile = () => {
                     </View>
                     <View className="border-t-[1px] border-gray-200 dark:border-zinc-600 mx-2 " />
                     <View className="p-2 mt-1 flex justify-between flex-row">
+
                         <Text className="text-lg text-gray-600  dark:text-white ">Politika zasebnosti</Text>
                         <Entypo name="chevron-right" size={24} color="rgb(156 163 175)" />
                     </View>
                 </View>
             </View>
+
             <View className="mt-5 mb-10">
 
                 <Pressable className="p-2 mt-1 dark:bg-zinc-900 bg-gray-200 rounded-2xl flex justify-center items-center " onPress={signOut}>
                     <Text className="text-lg text-red-500 ">Odjavi se</Text>
                 </Pressable>
             </View>
-        </ScrollView >
-    )
-}
+        </ScrollView>
+    );
+};
 
-export default profile
+export default Profile;
