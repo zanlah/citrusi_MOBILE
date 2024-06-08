@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
-import { View, Text, FlatList, Alert, Pressable } from 'react-native';
+import { View, Text, FlatList, Alert, Pressable, ActivityIndicator } from 'react-native';
 import axios from 'axios';
 import { useLocalSearchParams } from 'expo-router';
+import { router } from 'expo-router';
 
 type RouteDetails = {
     id: string;
@@ -15,21 +16,22 @@ type RouteDetails = {
     difficulty: string | null;
     hasSafetyGear: boolean;
     hutClosed: boolean;
-    // Add other route properties as needed
 }
 
 
 const RouteDetails = () => {
-    const { id } = useLocalSearchParams<{ id: string }>();
+    const { id, query } = useLocalSearchParams<{ id: string; query?: string }>();
+    const inProximity = query === 'true';
     const [route, setRoute] = useState<RouteDetails | null>(null);
     const [error, setError] = useState('');
-
+    const [loading, setLoading] = useState(true);
     useEffect(() => {
         const fetchRoute = async () => {
             try {
                 const response = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/routes/get-route?id=${id}`)
                 setRoute(response.data);
                 console.log(response.data)
+                setLoading(false);
             } catch (err) {
                 Alert.alert('Failed to load route');
             }
@@ -49,6 +51,13 @@ const RouteDetails = () => {
         return `${minutes}m`;
     };
 
+    const startRoute = async () => {
+        router.navigate('/route/start/' + id);
+    };
+
+    if (loading) {
+        return <View className="flex-1 items-center justify-center"><ActivityIndicator size="large" color="#0000ff" /></View>;
+    }
     return (
         <>
             <View className="bg-gray-200  min-h-full pt-5 p-2">
@@ -59,21 +68,20 @@ const RouteDetails = () => {
                         <Text className="text-lg mt-1 text-gray-600">Opis: {(route.abstractDescription)}</Text>
 
                         <View className="mt-4">
-
                             <Text className="text-lg">Čas: <Text className="font-bold">{(formatTime(route.duration))}</Text></Text>
                             <Text className="text-lg">Dolžina: <Text className="font-bold">{(route.distance)}</Text></Text>
                             <Text className="text-lg">Višinska razlika: <Text className="font-bold">{(route.cumulativeElevationGain)}</Text></Text>
                             <Text className="text-lg">Težavnost: <Text className="font-bold">{(route.difficulty || "neznana")}</Text></Text>
                             <Text className="text-lg">Plezalna oprema: <Text className="font-bold">{(route.hasSafetyGear || "ni potrebna")}</Text></Text>
                             <Text className="text-lg">Koča zaprta: <Text className="font-bold">{(route.hutClosed || "Ne")}</Text></Text>
-
-
                         </View>
                     </>
                 }
-                <Pressable className="px-4 py-4 mt-5 justify-center items-center bg-green-600 text-white  rounded-md" >
-                    <Text className="text-white text-xl font-bold"> začni </Text>
-                </Pressable>
+                {inProximity || 1 &&
+                    <Pressable className="px-4 py-4 mt-5 justify-center items-center bg-green-600 text-white  rounded-md" onPress={startRoute} >
+                        <Text className="text-white text-xl font-bold"> začni </Text>
+                    </Pressable>
+                }
             </View >
         </>
     );
