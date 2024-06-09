@@ -1,20 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import * as Paho from 'paho-mqtt';
-import MqttPublishSubscribe from '@/app/mqttPublishSubscribe';
+import MqttPublishSubscribe from '../components/MqttPublishSubscribe';
 import { useSession } from '../context/AuthProvider';
 
 const MqttPage = () => {
   const [client, setClient] = useState<Paho.Client | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const { session } = useSession();
-  const { id: userID, email, token } = session;
 
   useEffect(() => {
     connectToMqtt();
   }, []); // Runs only once on component mount
 
   const connectToMqtt = () => {
-    const mqttClient = new Paho.Client('test.mosquitto.org', 8080, userID); // spremeni 'test-mosquito.org' na nas broker, useID = clientID
+    const mqttClient = new Paho.Client('test.mosquitto.org', 8080, 'userID');
 
     mqttClient.connect({
       onSuccess: () => {
@@ -29,7 +27,9 @@ const MqttPage = () => {
   };
 
   return (
-    <MqttPublishSubscribe client={client} isConnected={isConnected} />
+    <>
+        <MqttPublishSubscribe client={client} isConnected={isConnected} />
+    </>
   );
 };
 

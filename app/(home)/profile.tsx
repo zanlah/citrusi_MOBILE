@@ -16,7 +16,7 @@ const profile = () => {
         router.navigate('/friends');
     }
     const sendMqttMessage = () => {
-        router.navigate('/message');
+        router.navigate('/mqttPage');
     }
 
     if (!session) {
