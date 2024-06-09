@@ -28,6 +28,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "eas-cli": "^9.1.0",
+    "event-source": "^0.1.1",
     "expo": "^51.0.8",
     "expo-av": "^14.0.5",
     "expo-camera": "^15.0.9",
