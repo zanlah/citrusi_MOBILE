@@ -47,7 +47,6 @@ export function SessionProvider(props: React.PropsWithChildren) {
 
         const userData = { ...user, token };
         setSession(userData);
-        Alert.alert("Sign In", "You have been signed in successfully!", [{ text: "OK" }]);
 
     };
 
@@ -59,16 +58,15 @@ export function SessionProvider(props: React.PropsWithChildren) {
 
         const updatedSession = {
             ...session,
-            profileImage: imageUrl  // Ensure this is part of the user object
+            profileImage: imageUrl
         };
 
         setSession(updatedSession);
-        Alert.alert("Update Profile Image", "Profile image updated successfully!", [{ text: "OK" }]);
     };
 
     const signOut = () => {
         setSession(null);
-        Alert.alert("Sign Out", "You have been signed out successfully!", [{ text: "OK" }]);
+
     };
 
     return (

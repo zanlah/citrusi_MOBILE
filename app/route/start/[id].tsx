@@ -126,7 +126,6 @@ const RouteDetails = () => {
     }
 
     const handleEndRoute = async () => {
-        // Confirm that the timer is actually on
         if (timerOn) {
             try {
                 const response = await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/routes/end-route`, {
@@ -135,22 +134,22 @@ const RouteDetails = () => {
                         'Content-Type': 'multipart/form-data',
                         'Authorization': `Bearer ${token}`
                     },
-                    id_route: id, // Assuming `id` is the ID of the route
+                    id_route: id,
                     id_user: userID,
-                    duration: timer // `timer` stores the total seconds elapsed
+                    duration: timer
                 },
                 );
                 if (response.status === 200) {
-                    Alert.alert("Success", "Route ended and time saved successfully.");
+                    Alert.alert("Uspešno", "Čestitam za opravljeno pot!.");
                 } else {
-                    Alert.alert("Error", "Failed to end route.");
+                    Alert.alert("Napaka", "Med shranjevanjem je prišlo do napake");
                 }
             } catch (error) {
                 console.error("Failed to send data", error);
                 Alert.alert("Error", "Failed to end route: " /*+ error.message*/);
             }
             setTimerOn(false);
-            setTimer(0); // Reset timer to zero
+            setTimer(0);
         }
     }
 
@@ -194,6 +193,7 @@ const RouteDetails = () => {
                         <Text className="text-4xl  mt-5 font-bold text-center">{formatTime(timer)}</Text>
                     </>
                 }
+
                 <Pressable onPress={startRoute} className={`px-4 py-4 mt-5 items-center ${timerOn ? 'bg-red-500' : 'bg-green-500'} rounded-lg`}>
                     <Text className="text-white text-xl font-bold">{timerOn ? 'Stop' : 'Start'}</Text>
                 </Pressable>

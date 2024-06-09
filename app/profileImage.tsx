@@ -57,10 +57,10 @@ const ProfileImage = () => {
 
             if (response.status === 200 || response.status === 201) {
                 console.log(response.data)
-                Alert.alert('Success', 'Image uploaded successfully!', response.data.file);
+                Alert.alert('Uspešno', 'Slika dodana!', response.data.file);
                 updateProfileImage(response.data.file)
             } else {
-                Alert.alert('Error', 'Upload failed with status: ' + response.status);
+                Alert.alert('Napaka', 'Med shranjevanjem je prošlo do napake. status: ' + response.status);
             }
         } catch (error) {
             Alert.alert('Error', 'An error occurred while uploading the image');
@@ -113,13 +113,13 @@ const ProfileImage = () => {
         <ScrollView className="bg-gray-100 dark:bg-black min-h-full pt-5 px-3 pb-10">
 
             <View className="flex-col justify-around space-y-6">
-                <TouchableOpacity onPress={pickImage} className="items-center text-white">
+                <TouchableOpacity onPress={pickImage} className="items-center text-white dark:text-white">
                     <Entypo name="image" color={color} size={30} />
-                    <Text className="text-white text-lg">izberi iz galerije</Text>
+                    <Text className="text-black dark:text-white text-lg">izberi iz galerije</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={takeImage} className="items-center">
                     <Entypo name="camera" size={30} color={color} />
-                    <Text className="text-white text-lg">Naredi novo sliko</Text>
+                    <Text className="text-black dark:text-white text-lg">Naredi novo sliko</Text>
                 </TouchableOpacity>
             </View>
         </ScrollView>
