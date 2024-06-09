@@ -1,8 +1,31 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, FlatList } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TextInput, Button, FlatList, Alert } from 'react-native';
+import axios from 'axios';
 
 const FollowersPage = () => {
-    const [followers, setFollowers] = useState(['user1', 'user2', 'user3', 'user4', 'user5', 'user6', 'user7']);
+    const [followers, setFollowers] = useState([]);
+
+    /*
+    const fetchUserSubscriptions = async () => {
+    try {
+      const { data, error } = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}`);
+      if (error) {
+        console.error('Error fetching user subscriptions:', error);
+        Alert.alert('Error', 'Failed to fetch user subscriptions');
+      } else {
+        const userSubscriptions = data?.subs || [];
+        setFollowers(userSubscriptions);
+      }
+    } catch (err) {
+      console.error('Error fetching user subscriptions:', err);
+      Alert.alert('Error', 'Failed to fetch user subscriptions');
+    }
+  };
+  
+  useEffect(() => {
+    fetchUserSubscriptions();
+  }, []);
+  */
 
   return (
     <View className='flex flex-1 p-5 pb-10 bg-gray-100'>
