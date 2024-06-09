@@ -5,7 +5,7 @@ import axios from 'axios';
 import { useSession } from '../context/AuthProvider';
 
 
-const MqttPublishSubscribe = ({ client, isConnected }: { client: Paho.Client | null, isConnected: boolean }) => {
+const MqttPublishSubscribe = ({ client, isConnected }: { client: Paho.Client, isConnected: boolean }) => {
   const [message, setMessage] = useState('');
   const [topic, setTopic] = useState('');
   const { session } = useSession();
@@ -17,37 +17,62 @@ const MqttPublishSubscribe = ({ client, isConnected }: { client: Paho.Client | n
       }
     }, [client]);
 
+    useEffect(() => {
+      if (isConnected) {
+      fetchAndSubscribeFriends();
+      }
+    }, [isConnected]);
+
+
+  const fetchAndSubscribeFriends = async () => {
+    try {
+      const response = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/users/friends`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const friends = response.data;
+
+      friends.forEach((friend: { email: any; }) => {
+        const friendTopic = friend.email;
+        client.subscribe(friendTopic, {
+          onSuccess: () => {
+            console.log(`Subscribed to friend's topic: ${friendTopic}`);
+          },
+          onFailure: (error) => {
+            console.error('Subscription error:', error);
+          },
+        });
+      });
+    } catch (error) {
+      console.error('Error fetching friends:', error);
+      Alert.alert('Error', 'Failed to fetch friends');
+    }
+  };
+
+
+
   const subscribeToTopic = () => {
     if (client && topic) {
       client.subscribe(topic, {
         onSuccess: async () => {
           Alert.alert('Subscribed', `Subscribed to topic ${topic}`);
           try {
-            // Fetch the current subscriptions
-            const response = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/users/${userID}`, {
+            // Add friend to the database
+            await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/users/add-friend`, {
+              userId: userID,
+              friendEmail: topic
+            }, {
               headers: {
                 Authorization: `Bearer ${token}`
               }
             });
 
-            let subscriptions = response.data.subscriptions || [];
-            if (!subscriptions.includes(topic)) {
-              subscriptions.push(topic);
-
-              // Update the user's subscriptions list
-              await axios.put(`${process.env.EXPO_PUBLIC_API_URL}/users/${userID}`, {
-                subscriptions
-              }, {
-                headers: {
-                  Authorization: `Bearer ${token}`
-                }
-              });
-
-              console.log('Subscription saved to database');
-            }
-            } catch (error) {
-            console.error('Error saving subscription to database:', error);
-            Alert.alert('Error', 'Failed to save subscription to database');
+            console.log('Friend added to database');
+          } catch (error) {
+            console.error('Error adding friend to database:', error);
+            Alert.alert('Error', 'Failed to add friend to database');
           }
         },
         onFailure: (error) => {
@@ -55,7 +80,6 @@ const MqttPublishSubscribe = ({ client, isConnected }: { client: Paho.Client | n
           Alert.alert('Subscription error', error.errorMessage);
         },
       });
-      client.onMessageArrived = onMessageArrived;
     } else {
       Alert.alert('Error', 'Please connect to the broker and enter a valid topic.');
     }
@@ -73,43 +97,6 @@ const MqttPublishSubscribe = ({ client, isConnected }: { client: Paho.Client | n
   const onMessageArrived = (message: { payloadString: string | undefined; }) => {
     Alert.alert('New Message Received', message.payloadString);
   };
-
-  // Fetch vse topice na kere je user subscriban oz. "prijatelje"
-  /*
-  const fetchUserSubscriptions = async () => {
-  try {
-    const { data, error } = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}`)
-
-    if (error) {
-      console.error('Error fetching user subscriptions:', error);
-      Alert.alert('Error', 'Failed to fetch user subscriptions');
-    } else {
-      const userSubscriptions = data?.subs || [];
-      console.log('User subscriptions:', userSubscriptions);
-      
-      // subscribe nazaj na vsak topic ko ga dobiš 
-      userSubscriptions.forEach((topic: string) => {
-        if (client && topic) {
-          client.subscribe(topic, {
-            onSuccess: () => {
-              console.log(`Subscribed to topic ${topic}`);
-            },
-            onFailure: (error) => {
-              console.error('Subscription error:', error);
-              Alert.alert('Subscription error', error.errorMessage);
-            },
-          });
-        }
-      });
-    }
-  } catch (err) {
-    console.error('Error fetching user subscriptions:', err);
-    Alert.alert('Error', 'Failed to fetch user subscriptions');
-  }
-};
-
-*/
-
 
   return (
     <View className="flex-1 items-center p-5">

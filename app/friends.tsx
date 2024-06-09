@@ -1,38 +1,44 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Button, FlatList, Alert } from 'react-native';
 import axios from 'axios';
+import { useSession } from '@/context/AuthProvider';
 
 const FollowersPage = () => {
-    const [followers, setFollowers] = useState([]);
+    const { session } = useSession();
+    const [friends, setFriends] = useState([]);
+    const { token, userId } = session;
 
-    /*
-    const fetchUserSubscriptions = async () => {
+    const fetchFriends = async () => {
     try {
-      const { data, error } = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}`);
-      if (error) {
-        console.error('Error fetching user subscriptions:', error);
-        Alert.alert('Error', 'Failed to fetch user subscriptions');
-      } else {
-        const userSubscriptions = data?.subs || [];
-        setFollowers(userSubscriptions);
-      }
-    } catch (err) {
-      console.error('Error fetching user subscriptions:', err);
-      Alert.alert('Error', 'Failed to fetch user subscriptions');
+        const response = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/users/friends?userId=${userId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        console.log('Response:', response.data);
+        if (response.data.error) {
+            throw new Error(response.data.error);
+        } else {
+            setFriends(response.data.user2_email);
+        }
+    } catch (error) {
+        console.error('Error fetching friends:', error);
+        Alert.alert('Error', 'Failed to fetch friends');
     }
-  };
-  
-  useEffect(() => {
-    fetchUserSubscriptions();
-  }, []);
-  */
+};
+
+
+    useEffect(() => {
+        console.log('fetching friends');
+        fetchFriends();
+    }, []);
 
   return (
     <View className='flex flex-1 p-5 pb-10 bg-gray-100'>
         <View className='w-full max-w-md'>
             <Text className='text-2xl font-bold mb-5'>Prijatelji</Text>
             <FlatList className=''
-            data={followers}
+            data={friends}
             keyExtractor={(item, index) => index.toString()}
             renderItem={({ item }) => (
                 <View className='w-full'>
