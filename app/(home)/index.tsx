@@ -17,17 +17,17 @@ const HomeScreen = () => {
 
       let location = await Location.getCurrentPositionAsync({});
       fetchRoutes(location.coords.latitude, location.coords.longitude);
-      Alert.alert('Location fetched', location.coords.latitude + ' ' + location.coords.longitude);
+
     })();
   }, []);
 
   const fetchRoutes = async (latitude: number, longitude: number) => {
     try {
-      const response = await axios.get(`http://52.143.190.38/api/routes/in-proximity?latitude=${latitude}&longitude=${longitude}&radius=100000&details=false`);
+      const response = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/routes/in-proximity?latitude=${latitude}&longitude=${longitude}&radius=100000&details=false`);
       let sortedRoutes = response.data.routes.sort((a: any, b: any) => a.distanceFromCurrentLocation - b.distanceFromCurrentLocation);
       setLoading(false);
       setRoutes(sortedRoutes);
-      console.log(response.data.routes);
+
     } catch (error) {
       Alert.alert('Failed to load routes');
     }
@@ -35,6 +35,11 @@ const HomeScreen = () => {
 
   const startRoute = async (routeId: number) => {
     router.navigate('/route/' + routeId + '?inProximity=true');
+
+  };
+
+  const viewRoute = async (routeId: number) => {
+    router.navigate('/route/' + routeId + '?inProximity=false');
 
   };
 
@@ -66,9 +71,13 @@ const HomeScreen = () => {
                 <Text className="dark:text-white">{item.distanceFromCurrentLocation / 1000} km</Text>
                 <Text className="dark:text-white">{formatTime(item.duration)} </Text>
               </View>
-              {item.distanceFromCurrentLocation / 1000 < 300 &&
+              {item.distanceFromCurrentLocation / 1000 < 11 &&
                 <Pressable className="bg-green-600 py-2  rounded-lg mt-1" onPress={() => { startRoute(item.id_route) }} >
                   <Text className="text-white text-center  ">Začni pot!</Text>
+                </Pressable>
+                ||
+                <Pressable className="bg-black py-2  rounded-lg mt-1" onPress={() => { viewRoute(item.id_route) }} >
+                  <Text className="text-white text-center  ">Oglej si pot</Text>
                 </Pressable>
               }
             </View>

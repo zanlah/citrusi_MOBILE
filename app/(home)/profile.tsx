@@ -6,7 +6,8 @@ import { useSession } from '../../context/AuthProvider'; // Adjust the path as n
 import { userInfo } from 'os';
 import { router } from 'expo-router';
 import { Redirect } from 'expo-router';
-const profile = () => {
+
+const Profile = () => {
     const { session, signOut } = useSession();
     const { profileImage, name, email } = session;
     const selectNewProfileImage = () => {

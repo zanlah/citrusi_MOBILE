@@ -32,7 +32,7 @@ const RegisterPage = () => {
 
     const loadSound = async () => {
         const { sound } = await Audio.Sound.createAsync(
-            require('../../assets/sounds/gunshot.mp3')
+            require('../../assets/sounds/beep.mp3')
         );
         setSound(sound);
     };
@@ -194,7 +194,7 @@ const RegisterPage = () => {
 
 
     if (loading) {
-        return <View className="flex-1 items-center justify-center dark:bg-black bg-white"><ActivityIndicator size="large" className="dark:text-white text-indigo-600" /></View>;
+        return <View className="flex-1 items-center justify-center dark:bg-black bg-white"><Text className="text-gray-600">Postopek lahko traja nekaj minut zato prosim počakajte.</Text><ActivityIndicator size="large" className="dark:text-white text-indigo-600" /></View>;
     }
 
     const animateButton = () => {
@@ -284,7 +284,7 @@ const RegisterPage = () => {
                 </View>
 
                 <Pressable className="px-4 py-2 mt-5 bg-black text-white dark:bg-white dark:text-black rounded-md" onPress={handleRegisterPress}>
-                    <Text className="text-lg"> Registracija </Text>
+                    <Text className="text-lg text-white dark:text-black "> Registracija </Text>
                 </Pressable>
 
 

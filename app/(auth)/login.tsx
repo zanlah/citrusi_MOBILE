@@ -144,7 +144,7 @@ const login = () => {
                     />
                 </View>
                 <Pressable className="px-4 py-2 mt-5 bg-black text-white dark:bg-white dark:text-black rounded-md" onPress={handleLoginButton}>
-                    <Text className=" text-lg"> Prijava </Text>
+                    <Text className="text-white dark:text-black text-lg"> Prijava </Text>
                 </Pressable>
 
                 {cameraOpen && cameraPermission && (

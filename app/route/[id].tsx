@@ -20,8 +20,9 @@ type RouteDetails = {
 
 
 const RouteDetails = () => {
-    const { id, query } = useLocalSearchParams<{ id: string; query?: string }>();
-    const inProximity = query === 'true';
+    const { id, inProximity } = useLocalSearchParams<{ id: string; inProximity?: string }>();
+    let inProximityBool = inProximity === 'true';
+
     const [route, setRoute] = useState<RouteDetails | null>(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
@@ -77,7 +78,7 @@ const RouteDetails = () => {
                         </View>
                     </>
                 }
-                {inProximity || 1 &&
+                {inProximityBool &&
                     <Pressable className="px-4 py-4 mt-5 justify-center items-center bg-green-600 text-white  rounded-md" onPress={startRoute} >
                         <Text className="text-white text-xl font-bold"> začni </Text>
                     </Pressable>
