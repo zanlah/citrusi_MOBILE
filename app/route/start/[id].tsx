@@ -1,230 +1,261 @@
-
-import React, { useState, useEffect, useRef } from 'react';
-import * as Location from 'expo-location';
-import { View, Text, FlatList, Alert, Pressable, ActivityIndicator, StyleSheet } from 'react-native';
-import axios from 'axios';
-import { useLocalSearchParams } from 'expo-router';
-import MapView, { Marker, Polyline } from 'react-native-maps';
-import proj4 from 'proj4';
-import { useSession } from '../../../context/AuthProvider';
+import React, { useState, useEffect, useRef } from "react";
+import * as Location from "expo-location";
+import {
+  View,
+  Text,
+  FlatList,
+  Alert,
+  Pressable,
+  ActivityIndicator,
+  StyleSheet,
+} from "react-native";
+import axios from "axios";
+import { useLocalSearchParams } from "expo-router";
+import MapView, { Marker, Polyline } from "react-native-maps";
+import proj4 from "proj4";
+import { useSession } from "../../../context/AuthProvider";
 
 type RouteDetails = {
-    id: string;
-    name: string;
-    duration: string;
-    distance: string;
-    cumulativeElevationGain: string;
-    abstractDescription: string;
-    difficulty: string | null;
-    hasSafetyGear: boolean;
-    hutClosed: boolean;
-}
+  id: string;
+  name: string;
+  duration: string;
+  distance: string;
+  cumulativeElevationGain: string;
+  abstractDescription: string;
+  difficulty: string | null;
+  hasSafetyGear: boolean;
+  hutClosed: boolean;
+};
 
-const fromProjection = 'EPSG:3857';
-const toProjection = 'EPSG:4326';
+const fromProjection = "EPSG:3857";
+const toProjection = "EPSG:4326";
 
 const RouteDetails = () => {
-    const { id } = useLocalSearchParams<{ id: string }>();
-    const [route, setRoute] = useState<RouteDetails | null>(null);
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [timer, setTimer] = useState(0);
-    const mapRef = useRef(null);
-    const [timerOn, setTimerOn] = useState(false);
-    const [location, setLocation] = useState<any>(null);
-    const [errorMsg, setErrorMsg] = useState<any>(null);
-    const [path, setPath] = useState([]);
-    const { session } = useSession();
-    const { id: userID, token } = session;
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const [route, setRoute] = useState<RouteDetails | null>(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [timer, setTimer] = useState(0);
+  const mapRef = useRef(null);
+  const [timerOn, setTimerOn] = useState(false);
+  const [location, setLocation] = useState<any>(null);
+  const [errorMsg, setErrorMsg] = useState<any>(null);
+  const [path, setPath] = useState<any>([]);
+  const { session } = useSession();
+  const { id: userID, token } = session;
 
+  useEffect(() => {
+    const fetchRoute = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.EXPO_PUBLIC_API_URL}/routes/get-route?id=${id}`
+        );
+        setRoute(response.data);
+        console.log(response.data);
+        const convertedPath = response.data.coordinates.map((coord: any) => {
+          // Assuming 'coord' is [longitude, latitude] in EPSG:3857
+          const [longitude, latitude] = proj4("EPSG:3857", "EPSG:4326", [
+            coord[0],
+            coord[1],
+          ]);
+          return { latitude, longitude };
+        });
 
-    useEffect(() => {
-        const fetchRoute = async () => {
-            try {
-                const response = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/routes/get-route?id=${id}`)
-                setRoute(response.data);
-                console.log(response.data)
-                const convertedPath = response.data.coordinates.map((coord: any) => {
-                    // Assuming 'coord' is [longitude, latitude] in EPSG:3857
-                    const [longitude, latitude] = proj4('EPSG:3857', 'EPSG:4326', [coord[0], coord[1]]);
-                    return { latitude, longitude };
-                });
-
-                setPath(convertedPath);
-                setLoading(false);
-            } catch (err) {
-                Alert.alert('Failed to load route');
-            }
-        };
-
-        if (id) {
-            fetchRoute();
-        }
-    }, [id]);
-
-    useEffect(() => {
-        (async () => {
-            let { status } = await Location.requestForegroundPermissionsAsync();
-            if (status !== 'granted') {
-                setErrorMsg('Permission to access location was denied');
-                return;
-            }
-
-            Location.watchPositionAsync({ accuracy: Location.Accuracy.High, timeInterval: 3000 }, (loc) => {
-                setLocation(loc.coords);
-            });
-        })();
-    }, []);
-
-    const formatTime = (seconds: number) => {
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        const remainingSeconds = seconds % 60;
-        return `${hours}h ${minutes}m ${remainingSeconds}s`;
+        setPath(convertedPath);
+        setLoading(false);
+      } catch (err) {
+        Alert.alert("Failed to load route");
+      }
     };
 
-    useEffect(() => {
-        let interval: any = null;
-        if (timerOn) {
-            interval = setInterval(() => {
-                setTimer(prevTime => prevTime + 1);
-            }, 1000);
-        } else if (!timerOn) {
-            clearInterval(interval);
-        }
-        return () => clearInterval(interval);
-    }, [timerOn]);
-
-    const toggleTimer = () => {
-
-        setTimerOn(!timerOn);
-    };
-
-    const startRoute = async () => {
-        if (timerOn) {
-            Alert.alert(
-                "Potrdi končanje",
-                "Ste končali pot in želite shraniti rezultat?",
-                [
-                    {
-                        text: "Prekliči",
-                        onPress: () => console.log("Cancel Pressed"),
-                        style: "cancel"
-                    },
-                    {
-                        text: "Da, končaj pot",
-                        onPress: () => {
-                            handleEndRoute();
-                        }
-                    }
-                ]
-            );
-        }
-        moveToCurrentLocationWithHeading()
-        toggleTimer();
-
+    if (id) {
+      fetchRoute();
     }
+  }, [id]);
 
-    const handleEndRoute = async () => {
-        if (timerOn) {
-            try {
-                const response = await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/routes/end-route`, {
-                    withCredentials: true,
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    id_route: id,
-                    id_user: userID,
-                    duration: timer
-                },
-                );
-                if (response.status === 200) {
-                    Alert.alert("Uspešno", "Čestitam za opravljeno pot!.");
-                } else {
-                    Alert.alert("Napaka", "Med shranjevanjem je prišlo do napake");
-                }
-            } catch (error) {
-                console.error("Failed to send data", error);
-                Alert.alert("Error", "Failed to end route: " /*+ error.message*/);
-            }
-            setTimerOn(false);
-            setTimer(0);
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setErrorMsg("Permission to access location was denied");
+        return;
+      }
+
+      Location.watchPositionAsync(
+        { accuracy: Location.Accuracy.High, timeInterval: 3000 },
+        (loc) => {
+          setLocation(loc.coords);
         }
+      );
+    })();
+  }, []);
+
+  const formatTime = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    return `${hours}h ${minutes}m ${remainingSeconds}s`;
+  };
+
+  useEffect(() => {
+    let interval: any = null;
+    if (timerOn) {
+      interval = setInterval(() => {
+        setTimer((prevTime) => prevTime + 1);
+      }, 1000);
+    } else if (!timerOn) {
+      clearInterval(interval);
     }
+    return () => clearInterval(interval);
+  }, [timerOn]);
 
-    const getBearing = (lat1: any, lon1: any, lat2: any, lon2: any) => {
-        const rad = Math.PI / 180;
-        const lat1Rad = lat1 * rad;
-        const lat2Rad = lat2 * rad;
-        const deltaLonRad = (lon2 - lon1) * rad;
+  const toggleTimer = () => {
+    setTimerOn(!timerOn);
+  };
 
-        const y = Math.sin(deltaLonRad) * Math.cos(lat2Rad);
-        const x = Math.cos(lat1Rad) * Math.sin(lat2Rad) -
-            Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(deltaLonRad);
+  const startRoute = async () => {
+    if (timerOn) {
+      Alert.alert(
+        "Potrdi končanje",
+        "Ste končali pot in želite shraniti rezultat?",
+        [
+          {
+            text: "Prekliči",
+            onPress: () => console.log("Cancel Pressed"),
+            style: "cancel",
+          },
+          {
+            text: "Da, končaj pot",
+            onPress: () => {
+              handleEndRoute();
+            },
+          },
+        ]
+      );
+    }
+    moveToCurrentLocationWithHeading();
+    toggleTimer();
+  };
 
-        return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
-    };
-    const moveToCurrentLocationWithHeading = () => {
-        if (mapRef.current && location && path.length > 0) {
-            const heading = getBearing(location.latitude, location.longitude, path[0].latitude, path[0].longitude);
-            (mapRef.current as any).animateCamera({
-                center: location,
-                pitch: 60,
-                tilt: 60,
-                heading: heading,
-                altitude: 4000,
-                zoom: 5
-            });
+  const handleEndRoute = async () => {
+    if (timerOn) {
+      try {
+        const response = await axios.post(
+          `${process.env.EXPO_PUBLIC_API_URL}/routes/end-route`,
+          {
+            withCredentials: true,
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`,
+            },
+            id_route: id,
+            id_user: userID,
+            duration: timer,
+          }
+        );
+        if (response.status === 200) {
+          Alert.alert("Uspešno", "Čestitam za opravljeno pot!.");
+        } else {
+          Alert.alert("Napaka", "Med shranjevanjem je prišlo do napake");
         }
-    };
-
-
-    if (loading) {
-        return <View className="flex-1 items-center justify-center"><ActivityIndicator size="large" color="#0000ff" /></View>;
+      } catch (error) {
+        console.error("Failed to send data", error);
+        Alert.alert("Error", "Failed to end route: " /*+ error.message*/);
+      }
+      setTimerOn(false);
+      setTimer(0);
     }
+  };
+
+  const getBearing = (lat1: any, lon1: any, lat2: any, lon2: any) => {
+    const rad = Math.PI / 180;
+    const lat1Rad = lat1 * rad;
+    const lat2Rad = lat2 * rad;
+    const deltaLonRad = (lon2 - lon1) * rad;
+
+    const y = Math.sin(deltaLonRad) * Math.cos(lat2Rad);
+    const x =
+      Math.cos(lat1Rad) * Math.sin(lat2Rad) -
+      Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(deltaLonRad);
+
+    return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+  };
+  const moveToCurrentLocationWithHeading = () => {
+    if (mapRef.current && location && path.length > 0) {
+      const heading = getBearing(
+        location.latitude,
+        location.longitude,
+        path[0].latitude,
+        path[0].longitude
+      );
+      (mapRef.current as any).animateCamera({
+        center: location,
+        pitch: 60,
+        tilt: 60,
+        heading: heading,
+        altitude: 4000,
+        zoom: 5,
+      });
+    }
+  };
+
+  if (loading) {
     return (
-        <>
-            <View className="bg-gray-200  min-h-full pt-5 p-2">
-
-                {route &&
-                    <>
-                        <Text className="text-2xl font-bold">{(route.name)}</Text>
-                        <Text className="text-4xl  mt-5 font-bold text-center">{formatTime(timer)}</Text>
-                    </>
-                }
-
-                <Pressable onPress={startRoute} className={`px-4 py-4 mt-5 items-center ${timerOn ? 'bg-red-500' : 'bg-green-500'} rounded-lg`}>
-                    <Text className="text-white text-xl font-bold">{timerOn ? 'Stop' : 'Start'}</Text>
-                </Pressable>
-
-                {location && (
-                    <MapView
-                        ref={mapRef}
-                        className="w-full mt-2 h-[350]"
-                        initialRegion={{
-                            latitude: location.latitude,
-                            longitude: location.longitude,
-                            latitudeDelta: 0.0922,
-                            longitudeDelta: 0.0421,
-                        }}
-                    >
-                        <Marker
-                            coordinate={{ latitude: location.latitude, longitude: location.longitude }}
-                            title="Your Location"
-                        />
-                        <Polyline
-                            coordinates={path}
-                            strokeColor="#000"
-                            strokeColors={['#7F0000']}
-                            strokeWidth={6}
-                        />
-                    </MapView>
-                )}
-            </View >
-        </>
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
     );
-}
+  }
+  return (
+    <>
+      <View className="bg-gray-200  min-h-full pt-5 p-2">
+        {route && (
+          <>
+            <Text className="text-2xl font-bold">{route.name}</Text>
+            <Text className="text-4xl  mt-5 font-bold text-center">
+              {formatTime(timer)}
+            </Text>
+          </>
+        )}
 
+        <Pressable
+          onPress={startRoute}
+          className={`px-4 py-4 mt-5 items-center ${timerOn ? "bg-red-500" : "bg-green-500"} rounded-lg`}
+        >
+          <Text className="text-white text-xl font-bold">
+            {timerOn ? "Stop" : "Start"}
+          </Text>
+        </Pressable>
+
+        {location && (
+          <MapView
+            ref={mapRef}
+            className="w-full mt-2 h-[350]"
+            initialRegion={{
+              latitude: location.latitude,
+              longitude: location.longitude,
+              latitudeDelta: 0.0922,
+              longitudeDelta: 0.0421,
+            }}
+          >
+            <Marker
+              coordinate={{
+                latitude: location.latitude,
+                longitude: location.longitude,
+              }}
+              title="Your Location"
+            />
+            <Polyline
+              coordinates={path}
+              strokeColor="#000"
+              strokeColors={["#7F0000"]}
+              strokeWidth={6}
+            />
+          </MapView>
+        )}
+      </View>
+    </>
+  );
+};
 
 export default RouteDetails;

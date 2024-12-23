@@ -1,46 +1,53 @@
-
-import React, { useState, useEffect } from 'react';
-import * as Location from 'expo-location';
-import { View, Text, FlatList, Alert, Pressable, ActivityIndicator } from 'react-native';
-import axios from 'axios';
-import { router } from 'expo-router';
+import React, { useState, useEffect } from "react";
+import * as Location from "expo-location";
+import {
+  View,
+  Text,
+  FlatList,
+  Alert,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";
+import axios from "axios";
+import { router } from "expo-router";
 const HomeScreen = () => {
   const [routes, setRoutes] = useState([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission to access location was denied');
+      if (status !== "granted") {
+        Alert.alert("Permission to access location was denied");
         return;
       }
 
       let location = await Location.getCurrentPositionAsync({});
       fetchRoutes(location.coords.latitude, location.coords.longitude);
-
     })();
   }, []);
 
   const fetchRoutes = async (latitude: number, longitude: number) => {
     try {
-      const response = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/routes/in-proximity?latitude=${latitude}&longitude=${longitude}&radius=100000&details=false`);
-      let sortedRoutes = response.data.routes.sort((a: any, b: any) => a.distanceFromCurrentLocation - b.distanceFromCurrentLocation);
+      const response = await axios.get(
+        `${process.env.EXPO_PUBLIC_API_URL}/routes/in-proximity?latitude=${latitude}&longitude=${longitude}&radius=100000&details=false`
+      );
+      let sortedRoutes = response.data.routes.sort(
+        (a: any, b: any) =>
+          a.distanceFromCurrentLocation - b.distanceFromCurrentLocation
+      );
       setLoading(false);
       setRoutes(sortedRoutes);
-
     } catch (error) {
-      Alert.alert('Failed to load routes');
+      Alert.alert("Failed to load routes");
     }
   };
 
   const startRoute = async (routeId: number) => {
-    router.navigate('/route/' + routeId + '?inProximity=true');
-
+    router.navigate(`/route/${routeId}?inProximity=true`);
   };
 
   const viewRoute = async (routeId: number) => {
-    router.navigate('/route/' + routeId + '?inProximity=false');
-
+    router.navigate(`/route/${routeId}?inProximity=false`);
   };
 
   const formatTime = (minutes: number) => {
@@ -53,12 +60,17 @@ const HomeScreen = () => {
   };
 
   if (loading) {
-    return <View className="flex-1 items-center justify-center dark:bg-black bg-white"><ActivityIndicator size="large" className="dark:text-white text-indigo-600" /></View>;
+    return (
+      <View className="flex-1 items-center justify-center dark:bg-black bg-white">
+        <ActivityIndicator
+          size="large"
+          className="dark:text-white text-indigo-600"
+        />
+      </View>
+    );
   }
   return (
     <>
-
-
       <View className="bg-gray-200 dark:bg-black  min-h-full pt-5 p-2">
         <FlatList
           data={routes}
@@ -67,26 +79,38 @@ const HomeScreen = () => {
             <View className="p-3 flex bg-white text-black dark:text-white dark:bg-zinc-900 mb-3 rounded-2xl">
               <Text className="text-lg dark:text-white">{item.name}</Text>
               <View className="flex justify-between flex-row">
-
-                <Text className="dark:text-white">{item.distanceFromCurrentLocation / 1000} km</Text>
-                <Text className="dark:text-white">{formatTime(item.duration)} </Text>
+                <Text className="dark:text-white">
+                  {item.distanceFromCurrentLocation / 1000} km
+                </Text>
+                <Text className="dark:text-white">
+                  {formatTime(item.duration)}{" "}
+                </Text>
               </View>
-              {item.distanceFromCurrentLocation / 1000 < 11 &&
-                <Pressable className="bg-green-600 py-2  rounded-lg mt-1" onPress={() => { startRoute(item.id_route) }} >
+              {(item.distanceFromCurrentLocation / 1000 < 11 && (
+                <Pressable
+                  className="bg-green-600 py-2  rounded-lg mt-1"
+                  onPress={() => {
+                    startRoute(item.id_route);
+                  }}
+                >
                   <Text className="text-white text-center  ">Začni pot!</Text>
                 </Pressable>
-                ||
-                <Pressable className="bg-black py-2  rounded-lg mt-1" onPress={() => { viewRoute(item.id_route) }} >
+              )) || (
+                <Pressable
+                  className="bg-black py-2  rounded-lg mt-1"
+                  onPress={() => {
+                    viewRoute(item.id_route);
+                  }}
+                >
                   <Text className="text-white text-center  ">Oglej si pot</Text>
                 </Pressable>
-              }
+              )}
             </View>
           )}
         />
       </View>
     </>
   );
-}
-
+};
 
 export default HomeScreen;
