@@ -34,12 +34,12 @@ const HomeScreen = () => {
   };
 
   const startRoute = async (routeId: number) => {
-    router.navigate('/route/' + routeId + '?inProximity=true');
+    router.navigate(`/route/${routeId}?inProximity=true` as any);
 
   };
 
   const viewRoute = async (routeId: number) => {
-    router.navigate('/route/' + routeId + '?inProximity=false');
+    router.navigate('/route/' + routeId + '?inProximity=false' as any);
 
   };
 

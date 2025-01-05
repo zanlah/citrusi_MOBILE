@@ -46,25 +46,25 @@ const Profile = () => {
                         <Entypo name="chevron-right" size={24} color="rgb(156 163 175)" />
                     </View>
                     <View className="border-t-[1px] border-gray-200 dark:border-zinc-600 mx-2 " />
-                
+
                     <Pressable onPress={sendMqttMessage}>
-                    <View className="p-2 mt-1 flex justify-between flex-row">
-                        <Text className="text-lg text-gray-600 ">Pošlji sporočilo</Text>
-                        <Entypo name="chevron-right" size={24} color="rgb(156 163 175)" />
-                    </View>
+                        <View className="p-2 mt-1 flex justify-between flex-row">
+                            <Text className="text-lg text-gray-600 ">Pošlji sporočilo</Text>
+                            <Entypo name="chevron-right" size={24} color="rgb(156 163 175)" />
+                        </View>
                     </Pressable>
 
                     <View className="border-t-[1px] border-gray-200 dark:border-zinc-600 mx-2 " />
 
                     <Pressable onPress={viewFriends}>
-                    <View className="p-2 mt-1 flex justify-between flex-row">                    
-                        <Text className="text-lg text-gray-600 dark:text-white ">Seznam prijateljev</Text>
-                        <Entypo name="chevron-right" size={24} color="rgb(156 163 175)" />
-                    </View>
-                </Pressable>
+                        <View className="p-2 mt-1 flex justify-between flex-row">
+                            <Text className="text-lg text-gray-600 dark:text-white ">Seznam prijateljev</Text>
+                            <Entypo name="chevron-right" size={24} color="rgb(156 163 175)" />
+                        </View>
+                    </Pressable>
+                </View>
             </View>
-        </View>
-        <View className="mt-5 ">
+            <View className="mt-5 ">
                 <Text className="text-md text-gray-600">Nastavitve</Text>
 
                 <View className="rounded-2xl  bg-white  dark:bg-zinc-900 mt-1">
@@ -89,4 +89,4 @@ const Profile = () => {
     );
 };
 
-export default profile;
+export default Profile;

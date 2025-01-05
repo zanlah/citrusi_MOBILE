@@ -89,6 +89,18 @@ const login = () => {
         }
     }
 
+    const handleGuestButton = async () => {
+        signIn({
+            token: "1",
+            user: {
+                id: "1",
+                email: "demo@demo.si"
+            }
+        });
+
+        router.push('/');
+    }
+
     const requestCameraPermission = async () => {
         const { status } = await Camera.requestCameraPermissionsAsync();
         setCameraPermission(status === 'granted');
@@ -147,6 +159,9 @@ const login = () => {
                     <Text className="text-white dark:text-black text-lg"> Prijava </Text>
                 </Pressable>
 
+                <Pressable className="px-4 py-2 mt-5 bg-black text-white dark:bg-white dark:text-black rounded-md" onPress={handleGuestButton}>
+                    <Text className="text-white dark:text-black text-lg"> Vstopi kot gost </Text>
+                </Pressable>
                 {cameraOpen && cameraPermission && (
                     <Modal
                         animationType="slide"
