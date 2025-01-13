@@ -24,7 +24,7 @@ import {
 
 import OrbitControlsView from 'expo-three-orbit-controls';
 
-function App() {
+function Model({ modelName = "object1", scale = 1 }) {
     const [isLoading, setIsLoading] = React.useState(true);
     const cameraRef = React.useRef<THREE.Camera>();
     const modelRef = React.useRef<Group>();
@@ -70,35 +70,35 @@ function App() {
           scene.add(new GridHelper(10, 10));
   */
         // Increase ambient light intensity significantly
-        const ambientLight = new AmbientLight(0xffffff, 3);
+        const ambientLight = new AmbientLight(0xffffff, 2);
         scene.add(ambientLight);
 
-        const pointLight = new PointLight(lightColor, 1, 1000, 1);
+        /*const pointLight = new PointLight(lightColor, 1, 1000, 1);
         pointLight.position.set(50, 50, 50);
         scene.add(pointLight);
+*/
 
-        // Increase spot light intensity
-        const spotLight = new SpotLight(
-            lightColor,
-            0.5 * Math.PI,
-            0,
-            Math.PI / 3,
-            0,
-            0.0
-        );
-        spotLight.position.set(0, 500, 100);
-        spotLight.lookAt(scene.position);
-        scene.add(spotLight);
+        /*  const spotLight = new SpotLight(
+              lightColor,
+              0.1 * Math.PI,
+              0,
+              Math.PI / 3,
+              0,
+              0.0
+          );
+          spotLight.position.set(0, 500, 100);
+          spotLight.lookAt(scene.position);
+          scene.add(spotLight);*/
 
-        // Load and add an obj model
+        //nalozim obj model
         const assets: any = {
-            obj: 'http://172.20.10.3:3000/uploads/objects/object1.obj',
-            mtl: 'http://172.20.10.3:3000/uploads/objects/object1.mtl',
-            // Add all textures referenced in MTL
+            obj: `http://172.20.10.3:3000/uploads/objects/${modelName}/${modelName}.obj`,
+            mtl: `http://172.20.10.3:3000/uploads/objects/${modelName}/${modelName}.mtl`,
+            //dodam teksture
             textures: {
-                color: 'http://172.20.10.3:3000/uploads/objects/textures/color.jpg',
-                normal: 'http://172.20.10.3:3000/uploads/objects/textures/normal.jpg',
-                occlusion: 'http://172.20.10.3:3000/uploads/objects/textures/occlusion.jpg'
+                color: `http://172.20.10.3:3000/uploads/objects/${modelName}/textures/color.jpg`,
+                normal: `http://172.20.10.3:3000/uploads/objects/${modelName}/textures/normal.jpg`,
+                occlusion: `http://172.20.10.3:3000/uploads/objects/${modelName}/textures/occlusion.jpg`
             }
         };
 
@@ -142,7 +142,7 @@ function App() {
                 });
 
                 // Position the object in view
-                object.scale.set(5, 5, 5);
+                object.scale.set(scale, scale, scale);
                 object.position.set(0, -2, 0); // Center the object
 
                 scene.add(object);
@@ -181,8 +181,8 @@ function App() {
             <OrbitControlsView
                 style={{ flex: 1, borderRadius: 40 }}
                 camera={cameraRef.current}
-                minPolarAngle={0} // Minimum vertical rotation (45 degrees from top)
-                maxPolarAngle={Math.PI * 0.1} // Maximum vertical rotation (90 degrees - horizontal)
+                //  minPolarAngle={0} // Minimum vertical rotation (45 degrees from top)
+                // maxPolarAngle={Math.PI * 0.1} // Maximum vertical rotation (90 degrees - horizontal)
                 minDistance={1} // Minimum zoom distance
                 maxDistance={4} // Maximum zoom distance
                 enablePan={false}
@@ -195,7 +195,7 @@ function App() {
     );
 }
 
-export default App;
+export default Model;
 const LoadingView = () => {
     return (
         <View
@@ -210,7 +210,7 @@ const LoadingView = () => {
             }}
         >
             <ActivityIndicator />
-            <Text>Loading...</Text>
+            <Text>Nalagam...</Text>
         </View>
     );
 };

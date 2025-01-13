@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
-import { View, Text, FlatList, Alert, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, Alert, Pressable, ActivityIndicator, ScrollView } from 'react-native';
 import axios from 'axios';
 import { useLocalSearchParams } from 'expo-router';
 import { router } from 'expo-router';
@@ -61,11 +61,11 @@ const RouteDetails = () => {
     }
     return (
         <>
-            <View className="bg-gray-200  min-h-full pt-5 p-2">
-                <Model1 />
+            <ScrollView className="bg-gray-200  min-h-full pt-5 p-2" contentContainerStyle={{ paddingBottom: 20 }}>
+
                 {route &&
                     <>
-                        <Text className="text-2xl font-bold">{route.name}</Text>
+                        <Text className="text-2xl font-bold">{route.name}, {route.id}</Text>
                         <Text className="text-lg mt-1 text-gray-600">Opis: {route.abstractDescription}</Text>
 
                         <View className="mt-4">
@@ -97,7 +97,16 @@ const RouteDetails = () => {
                         <Text className="text-white text-xl font-bold"> začni </Text>
                     </Pressable>
                 }
-            </View >
+                <View className="h-[500px] mt-5 rounded-xl">
+                    {route && route.id == "30753" &&
+                        <Model1 modelName={"parkomat"} scale={1.5} />
+                        || route && route.id == "30925" &&
+                        <Model1 modelName={"sign"} scale={4} />
+                        || route && route.id == "30819" &&
+                        <Model1 modelName={"signtwo"} scale={2} />
+                    }
+                </View>
+            </ScrollView >
         </>
     );
 }
