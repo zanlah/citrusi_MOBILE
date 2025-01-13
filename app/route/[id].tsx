@@ -5,13 +5,13 @@ import { View, Text, FlatList, Alert, Pressable, ActivityIndicator } from 'react
 import axios from 'axios';
 import { useLocalSearchParams } from 'expo-router';
 import { router } from 'expo-router';
-
+import Model1 from "../Model1"
 type RouteDetails = {
     id: string;
     name: string;
-    duration: string;
-    distance: string;
-    cumulativeElevationGain: string;
+    duration: string | number;
+    distance: string | number;
+    cumulativeElevationGain: string | number;
     abstractDescription: string;
     difficulty: string | null;
     hasSafetyGear: boolean;
@@ -53,7 +53,7 @@ const RouteDetails = () => {
     };
 
     const startRoute = async () => {
-        router.navigate('/route/start/' + id);
+        router.navigate(`/route/start/${id}`);
     };
 
     if (loading) {
@@ -62,19 +62,33 @@ const RouteDetails = () => {
     return (
         <>
             <View className="bg-gray-200  min-h-full pt-5 p-2">
-
+                <Model1 />
                 {route &&
                     <>
-                        <Text className="text-2xl font-bold">{(route.name)}</Text>
-                        <Text className="text-lg mt-1 text-gray-600">Opis: {(route.abstractDescription)}</Text>
+                        <Text className="text-2xl font-bold">{route.name}</Text>
+                        <Text className="text-lg mt-1 text-gray-600">Opis: {route.abstractDescription}</Text>
 
                         <View className="mt-4">
-                            <Text className="text-lg">Čas: <Text className="font-bold">{(formatTime(route.duration))}</Text></Text>
-                            <Text className="text-lg">Dolžina: <Text className="font-bold">{(route.distance)}</Text></Text>
-                            <Text className="text-lg">Višinska razlika: <Text className="font-bold">{(route.cumulativeElevationGain)}</Text></Text>
-                            <Text className="text-lg">Težavnost: <Text className="font-bold">{(route.difficulty || "neznana")}</Text></Text>
-                            <Text className="text-lg">Plezalna oprema: <Text className="font-bold">{(route.hasSafetyGear || "ni potrebna")}</Text></Text>
-                            <Text className="text-lg">Koča zaprta: <Text className="font-bold">{(route.hutClosed || "Ne")}</Text></Text>
+                            <Text className="text-lg">Čas: <Text className="font-bold">
+                                {typeof route.duration === 'string' ? route.duration : formatTime(route.duration)}
+                            </Text></Text>
+                            <Text className="text-lg">Dolžina: <Text className="font-bold">
+                                {typeof route.distance === 'number' ? `${route.distance} km` : route.distance}
+                            </Text></Text>
+                            <Text className="text-lg">Višinska razlika: <Text className="font-bold">
+                                {typeof route.cumulativeElevationGain === 'number' ?
+                                    `${route.cumulativeElevationGain} m` :
+                                    route.cumulativeElevationGain}
+                            </Text></Text>
+                            <Text className="text-lg">Težavnost: <Text className="font-bold">
+                                {route.difficulty || "neznana"}
+                            </Text></Text>
+                            <Text className="text-lg">Plezalna oprema: <Text className="font-bold">
+                                {route.hasSafetyGear ? "Potrebna" : "Ni potrebna"}
+                            </Text></Text>
+                            <Text className="text-lg">Koča zaprta: <Text className="font-bold">
+                                {route.hutClosed ? "Da" : "Ne"}
+                            </Text></Text>
                         </View>
                     </>
                 }
